@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>食事管理アプリ</title>
+<meta name="description" content="日々の食事・体重を記録する個人用の食事管理アプリ" />
+
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#15170F" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="食事管理" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+  html, body { margin: 0; padding: 0; background: #15170F; }
+  #root { min-height: 100vh; }
+  #loading { color: #A9A894; font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif; padding: 30px; }
+</style>
+</head>
+<body>
+<div id="root"><div id="loading">読み込み中…</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  // 将来オフライン対応が必要になった場合のための予約枠(今は何もしない)
+}
+</script>
+</body>
+</html>
