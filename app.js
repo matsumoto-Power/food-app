@@ -396,6 +396,7 @@ function parseFoodsCsv(text) {
   return { foods, error: null };
 }
 function colorForTag(tag, order) {
+  if (tag === "\u672A\u78BA\u5B9A") return { bg: C.warnBg, text: C.warnText };
   if (tag in TAG_COLOR_INDEX) return PALETTE[TAG_COLOR_INDEX[tag]];
   const idx = order.indexOf(tag);
   return PALETTE[(idx >= 0 ? idx : tag.length) % PALETTE.length];
@@ -691,10 +692,10 @@ function FoodAdder({ foods, categoryOrder, onAddFood, onAddUnconfirmed }) {
     browseResults.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { padding: 10, fontSize: 14.5, color: C.textMuted } }, "\u8A72\u5F53\u3059\u308B\u98DF\u54C1\u304C\u3042\u308A\u307E\u305B\u3093") : browseResults.map((f) => /* @__PURE__ */ React.createElement(FoodResultRow, { key: f.n, f, onPick: pickFromBrowse }))
   )));
 }
-function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemoveSlot, onAddFood, onAddUnconfirmed, onRemoveItem }) {
+function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemoveSlot, onAddFood, onAddUnconfirmed, onRemoveItem, onEditNutrients }) {
   const totals = slot.totals;
   const unconfirmedCount = slot.items.filter((it) => !it.confirmed).length;
-  return /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17, display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: colorForIndex(index) } }), slot.id), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u3053\u306E\u67A0\u3092\u30B3\u30D4\u30FC", onClick: onCopy }, "\u29C9"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u8CBC\u308A\u4ED8\u3051", onClick: onPaste }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u3053\u306E\u67A0\u3092\u524A\u9664", danger: true, onClick: onRemoveSlot }, "\u2715"))), slot.items.length > 0 && /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", null, "\u98DF\u54C1\u540D"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u5869"), /* @__PURE__ */ React.createElement("td", null))), /* @__PURE__ */ React.createElement("tbody", null, slot.items.map((it) => /* @__PURE__ */ React.createElement("tr", { key: it.id }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0" } }, it.name, !it.confirmed && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17, display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: colorForIndex(index) } }), slot.id), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u3053\u306E\u67A0\u3092\u30B3\u30D4\u30FC", onClick: onCopy }, "\u29C9"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u8CBC\u308A\u4ED8\u3051", onClick: onPaste }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u3053\u306E\u67A0\u3092\u524A\u9664", danger: true, onClick: onRemoveSlot }, "\u2715"))), slot.items.length > 0 && /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", null, "\u98DF\u54C1\u540D"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u5869"), /* @__PURE__ */ React.createElement("td", null))), /* @__PURE__ */ React.createElement("tbody", null, slot.items.map((it) => /* @__PURE__ */ React.createElement("tr", { key: it.id, id: `unconfirmed-item-${it.id}` }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0" } }, it.name, !it.confirmed && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "span",
     {
       style: {
@@ -707,7 +708,14 @@ function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemove
       }
     },
     "\u672A\u78BA\u5B9A"
-  )), it.confirmed ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.kcal), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.p), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.f), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.c), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.salt)) : /* @__PURE__ */ React.createElement("td", { colSpan: 5, style: { textAlign: "right", color: C.textMuted } }, "\u5F8C\u3067\u6804\u990A\u7D20\u3092\u7DE8\u96C6"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onEditNutrients(it.name),
+      style: { border: "none", background: "none", color: C.accent, cursor: "pointer", fontSize: 12.5, marginLeft: 6, textDecoration: "underline" }
+    },
+    "\u6804\u990A\u7D20\u3092\u7DE8\u96C6"
+  ))), it.confirmed ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.kcal), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.p), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.f), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.c), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.salt)) : /* @__PURE__ */ React.createElement("td", { colSpan: 5, style: { textAlign: "right", color: C.textMuted } }, "\u5F8C\u3067\u6804\u990A\u7D20\u3092\u7DE8\u96C6"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => onRemoveItem(it.id),
@@ -727,7 +735,7 @@ function FoodFormFields({ form, setForm, allTags, categoryOrder, newTagText, set
     onAddCategory(t);
     setNewTagText("");
   };
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 8, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u98DF\u54C1\u540D", value: form.n, onChange: (e) => setForm({ ...form, n: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "kcal", value: form.k, onChange: (e) => setForm({ ...form, k: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u30BF\u30F3\u30D1\u30AF\u8CEA(g)", value: form.p, onChange: (e) => setForm({ ...form, p: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u8102\u8CEA(g)", value: form.f, onChange: (e) => setForm({ ...form, f: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u70AD\u6C34\u5316\u7269(g)", value: form.c, onChange: (e) => setForm({ ...form, c: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u5869\u5206(g)", value: form.s, onChange: (e) => setForm({ ...form, s: e.target.value }), style: inputStyle })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30E1\u30A4\u30F3\u5206\u985E(1\u3064\u30FB\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u4E00\u89A7\u306E\u4E26\u3073\u9806\u306B\u4F7F\u308F\u308C\u307E\u3059)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, allTags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.mn === t, onClick: () => selectMain(t), small: true }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30B5\u30D6\u5206\u985E(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, allTags.filter((t) => t !== form.mn).map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.sub.includes(t), onClick: () => toggleSub(t), small: true, faded: !form.sub.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u5206\u985E\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u5206\u985E\u3092\u8FFD\u52A0")));
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 8, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u98DF\u54C1\u540D", value: form.n, onChange: (e) => setForm({ ...form, n: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "kcal", value: form.k, onChange: (e) => setForm({ ...form, k: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u30BF\u30F3\u30D1\u30AF\u8CEA(g)", value: form.p, onChange: (e) => setForm({ ...form, p: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u8102\u8CEA(g)", value: form.f, onChange: (e) => setForm({ ...form, f: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u70AD\u6C34\u5316\u7269(g)", value: form.c, onChange: (e) => setForm({ ...form, c: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u5869\u5206(g)", value: form.s, onChange: (e) => setForm({ ...form, s: e.target.value }), style: inputStyle })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30E1\u30A4\u30F3\u5206\u985E(1\u3064\u30FB\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u4E00\u89A7\u306E\u4E26\u3073\u9806\u306B\u4F7F\u308F\u308C\u307E\u3059)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, allTags.filter((t) => t !== "\u672A\u78BA\u5B9A").map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.mn === t, onClick: () => selectMain(t), small: true }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30B5\u30D6\u5206\u985E(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, allTags.filter((t) => t !== form.mn && t !== "\u672A\u78BA\u5B9A").map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.sub.includes(t), onClick: () => toggleSub(t), small: true, faded: !form.sub.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u5206\u985E\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u5206\u985E\u3092\u8FFD\u52A0")));
 }
 function FoodEditModal({ food, allTags, categoryOrder, onSave, onClose, onAddCategory }) {
   const [form, setForm] = useState({ n: food.n, mn: food.mn, sub: [...food.sb || []], k: String(food.k), p: String(food.p), f: String(food.f), c: String(food.c), s: String(food.s) });
@@ -769,7 +777,7 @@ function FoodEditModal({ food, allTags, categoryOrder, onSave, onClose, onAddCat
   );
 }
 const PAGE_SIZE = 100;
-function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onImportMany, onAddCategory }) {
+function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onImportMany, onAddCategory, editRequest }) {
   const [q, setQ] = useState("");
   const [tag, setTag] = useState("");
   const [page, setPage] = useState(1);
@@ -777,7 +785,23 @@ function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onImportMany, onAddCa
   const [csvResult, setCsvResult] = useState(null);
   const [csvBusy, setCsvBusy] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
+  const [editingFood, setEditingFood] = useState(null);
   const allTags = useMemo(() => mergedTagList(foods, categoryOrder), [foods, categoryOrder]);
+  const [form, setForm] = useState(emptyFoodForm());
+  const [newTagText, setNewTagText] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  useEffect(() => {
+    if (!editRequest) return;
+    const match = foods.find((f) => f.n === editRequest.name);
+    if (match) {
+      setEditingFood(match);
+    } else {
+      setForm({ ...emptyFoodForm(), n: editRequest.name });
+      setEditingFood(null);
+    }
+    setQ(editRequest.name);
+    setPage(1);
+  }, [editRequest == null ? void 0 : editRequest.token]);
   const filtered = useMemo(() => {
     const f2 = foods.filter((f) => {
       const okQ = !q.trim() || f.n.toLowerCase().includes(q.trim().toLowerCase());
@@ -789,10 +813,6 @@ function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onImportMany, onAddCa
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageClamped = Math.min(page, totalPages);
   const paged = filtered.slice((pageClamped - 1) * PAGE_SIZE, pageClamped * PAGE_SIZE);
-  const [form, setForm] = useState(emptyFoodForm());
-  const [newTagText, setNewTagText] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [editingFood, setEditingFood] = useState(null);
   const submit = () => {
     if (!form.n.trim() || !form.k || !form.mn) {
       setErrorMsg("\u98DF\u54C1\u540D\u30FBkcal\u30FB\u30E1\u30A4\u30F3\u5206\u985E\u306F\u5FC5\u9808\u3067\u3059");
@@ -1747,6 +1767,7 @@ function App() {
   const [copyMsg, setCopyMsg] = useState("");
   const [noteOpen, setNoteOpen] = useState(false);
   const [summaryRequest, setSummaryRequest] = useState(null);
+  const [foodEditRequest, setFoodEditRequest] = useState(null);
   useEffect(() => {
     (async () => {
       let f = await loadJSON("foods", null);
@@ -1837,6 +1858,22 @@ function App() {
     return /* @__PURE__ */ React.createElement("div", { style: { padding: 30, color: C.textMuted, fontFamily: "'Zen Kaku Gothic New','Noto Sans JP',sans-serif" } }, "\u8AAD\u307F\u8FBC\u307F\u4E2D\u2026");
   }
   const unconfirmedTotal = day.slots.reduce((a, s) => a + s.items.filter((it) => !it.confirmed).length, 0);
+  const firstUnconfirmedId = (() => {
+    for (const s of day.slots) {
+      const it = s.items.find((it2) => !it2.confirmed);
+      if (it) return it.id;
+    }
+    return null;
+  })();
+  const jumpToFirstUnconfirmed = () => {
+    if (!firstUnconfirmedId) return;
+    const el = document.getElementById(`unconfirmed-item-${firstUnconfirmedId}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+  const editNutrientsFor = (name) => {
+    setFoodEditRequest({ name, token: Date.now() });
+    setTab("foods");
+  };
   const addSlot = () => persistDay(dayAddSlot(day));
   const removeSlot = (id) => persistDay(dayRemoveSlot(day, id));
   const copySlot = (id) => {
@@ -1851,7 +1888,25 @@ function App() {
     persistDay(dayPasteSlot(day, id, clip));
   };
   const addFood = (slotId, f) => persistDay(dayAddFood(day, slotId, f));
-  const addUnconfirmed = (slotId, name) => persistDay(dayAddUnconfirmed(day, slotId, name));
+  const addUnconfirmed = (slotId, name) => {
+    const trimmed = name.trim();
+    const existingUnconfirmed = foods.find((f) => f.n === trimmed && f.mn === "\u672A\u78BA\u5B9A");
+    if (existingUnconfirmed) {
+      const ok = window.confirm(
+        `\u300C${trimmed}\u300D\u3068\u3044\u3046\u540D\u524D\u306E\u672A\u78BA\u5B9A\u98DF\u54C1\u304C\u98DF\u54C1DB\u306B\u65E2\u306B\u3042\u308A\u307E\u3059\u3002\u540C\u3058\u3082\u306E\u3068\u3057\u3066\u307E\u3068\u3081\u3066\u3088\u3044\u3067\u3059\u304B?
+
+(\u307E\u3068\u3081\u308B\u3068\u3001\u5F8C\u3067\u6804\u990A\u7D20\u3092\u78BA\u5B9A\u3057\u305F\u6642\u306B\u3053\u306E\u8A18\u9332\u306B\u3082\u307E\u3068\u3081\u3066\u53CD\u6620\u3055\u308C\u307E\u3059\u3002\u5225\u7269\u3067\u3042\u308C\u3070\u300C\u30AD\u30E3\u30F3\u30BB\u30EB\u300D\u3092\u62BC\u3057\u3001\u540D\u524D\u306E\u672B\u5C3E\u306B\u6570\u5B57\u3092\u4ED8\u3051\u308B\u30FB\u304A\u5E97\u306E\u540D\u524D\u3092\u52A0\u3048\u308B\u306A\u3069\u3057\u3066\u533A\u5225\u3057\u3066\u304B\u3089\u767B\u9332\u3057\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002)`
+      );
+      if (!ok) return;
+      persistDay(dayAddUnconfirmed(day, slotId, trimmed));
+      return;
+    }
+    persistDay(dayAddUnconfirmed(day, slotId, trimmed));
+    const newFood = { n: trimmed, mn: "\u672A\u78BA\u5B9A", sb: [], k: 0, p: 0, f: 0, c: 0, s: 0 };
+    const updatedFoods = [...foods, newFood];
+    setFoods(updatedFoods);
+    saveJSON("foods", updatedFoods);
+  };
   const removeItem = (slotId, itemId) => persistDay(dayRemoveItem(day, slotId, itemId));
   const exportAllData = async () => {
     const logs = {};
@@ -2073,7 +2128,18 @@ function App() {
       foods,
       onSaveCategoryOrder: saveCategoryOrder
     }
-  ), tab === "foods" && /* @__PURE__ */ React.createElement(FoodsTab, { foods, categoryOrder, onAdd: addNewFoodToMaster, onUpdate: updateFood, onImportMany: importFoodsBulk, onAddCategory: addCategory }), tab === "calendar" && /* @__PURE__ */ React.createElement(
+  ), tab === "foods" && /* @__PURE__ */ React.createElement(
+    FoodsTab,
+    {
+      foods,
+      categoryOrder,
+      onAdd: addNewFoodToMaster,
+      onUpdate: updateFood,
+      onImportMany: importFoodsBulk,
+      onAddCategory: addCategory,
+      editRequest: foodEditRequest
+    }
+  ), tab === "calendar" && /* @__PURE__ */ React.createElement(
     CalendarTab,
     {
       target,
@@ -2108,7 +2174,8 @@ function App() {
       onRemoveSlot: () => removeSlot(s.id),
       onAddFood: (f) => addFood(s.id, f),
       onAddUnconfirmed: (n) => addUnconfirmed(s.id, n),
-      onRemoveItem: (itemId) => removeItem(s.id, itemId)
+      onRemoveItem: (itemId) => removeItem(s.id, itemId),
+      onEditNutrients: (name) => editNutrientsFor(name)
     }
   ))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "0.9rem 1.1rem" } }, /* @__PURE__ */ React.createElement(
     "div",
@@ -2141,7 +2208,7 @@ function App() {
         justifyContent: "space-between"
       }
     },
-    unconfirmedTotal > 0 ? /* @__PURE__ */ React.createElement("span", { style: { fontSize: 15, color: C.warnText } }, "\u26A0 \u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u304C", unconfirmedTotal, "\u4EF6\u3042\u308A\u307E\u3059") : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 15, color: C.textMuted } }, "\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u306F\u3042\u308A\u307E\u305B\u3093"),
+    unconfirmedTotal > 0 ? /* @__PURE__ */ React.createElement("span", { onClick: jumpToFirstUnconfirmed, style: { fontSize: 15, color: C.warnText, cursor: "pointer", textDecoration: "underline" } }, "\u26A0 \u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u304C", unconfirmedTotal, "\u4EF6\u3042\u308A\u307E\u3059(\u30BF\u30C3\u30D7\u3057\u3066\u79FB\u52D5)") : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 15, color: C.textMuted } }, "\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u306F\u3042\u308A\u307E\u305B\u3093"),
     /* @__PURE__ */ React.createElement(
       Btn,
       {
