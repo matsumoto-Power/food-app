@@ -726,6 +726,21 @@ function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemove
   )))))), /* @__PURE__ */ React.createElement(FoodAdder, { foods, categoryOrder, onAddFood, onAddUnconfirmed }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 8, fontSize: 14.5, color: C.textMuted } }, "\u5C0F\u8A08 ", totals.kcal, "kcal \u30FB P", Math.round(totals.p * 10) / 10, "g \u30FB \u8102", Math.round(totals.f * 10) / 10, "g \u30FB \u70AD", Math.round(totals.c * 10) / 10, "g \u30FB \u5869", Math.round(totals.salt * 10) / 10, "g", unconfirmedCount > 0 ? `(\u672A\u78BA\u5B9A${unconfirmedCount}\u4EF6\u3092\u9664\u304F)` : ""));
 }
 const emptyFoodForm = () => ({ n: "", mn: "", sub: [], k: "", p: "", f: "", c: "", s: "" });
+function normalizeNumInput(v) {
+  if (v.startsWith(".")) return "0" + v;
+  return v;
+}
+function LabeledInput({ label, value, onChange, numeric, placeholder }) {
+  return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12.5, color: C.textMuted } }, label), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      value,
+      onChange: (e) => onChange(numeric ? normalizeNumInput(e.target.value) : e.target.value),
+      placeholder,
+      style: inputStyle
+    }
+  ));
+}
 function FoodFormFields({ form, setForm, allTags, categoryOrder, newTagText, setNewTagText, onAddCategory }) {
   const toggleSub = (t) => setForm((prev) => ({ ...prev, sub: prev.sub.includes(t) ? prev.sub.filter((x) => x !== t) : [...prev.sub, t] }));
   const selectMain = (t) => setForm((prev) => ({ ...prev, mn: prev.mn === t ? "" : t, sub: prev.sub.filter((x) => x !== t) }));
@@ -735,7 +750,7 @@ function FoodFormFields({ form, setForm, allTags, categoryOrder, newTagText, set
     onAddCategory(t);
     setNewTagText("");
   };
-  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 8, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u98DF\u54C1\u540D", value: form.n, onChange: (e) => setForm({ ...form, n: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "kcal", value: form.k, onChange: (e) => setForm({ ...form, k: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u30BF\u30F3\u30D1\u30AF\u8CEA(g)", value: form.p, onChange: (e) => setForm({ ...form, p: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u8102\u8CEA(g)", value: form.f, onChange: (e) => setForm({ ...form, f: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u70AD\u6C34\u5316\u7269(g)", value: form.c, onChange: (e) => setForm({ ...form, c: e.target.value }), style: inputStyle }), /* @__PURE__ */ React.createElement("input", { placeholder: "\u5869\u5206(g)", value: form.s, onChange: (e) => setForm({ ...form, s: e.target.value }), style: inputStyle })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30E1\u30A4\u30F3\u5206\u985E(1\u3064\u30FB\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u4E00\u89A7\u306E\u4E26\u3073\u9806\u306B\u4F7F\u308F\u308C\u307E\u3059)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, allTags.filter((t) => t !== "\u672A\u78BA\u5B9A").map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.mn === t, onClick: () => selectMain(t), small: true }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30B5\u30D6\u5206\u985E(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, allTags.filter((t) => t !== form.mn && t !== "\u672A\u78BA\u5B9A").map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.sub.includes(t), onClick: () => toggleSub(t), small: true, faded: !form.sub.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u5206\u985E\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u5206\u985E\u3092\u8FFD\u52A0")));
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 10, marginBottom: 10 } }, /* @__PURE__ */ React.createElement(LabeledInput, { label: "\u98DF\u54C1\u540D", value: form.n, onChange: (v) => setForm({ ...form, n: v }) }), /* @__PURE__ */ React.createElement(LabeledInput, { label: "kcal", value: form.k, onChange: (v) => setForm({ ...form, k: v }), numeric: true }), /* @__PURE__ */ React.createElement(LabeledInput, { label: "\u30BF\u30F3\u30D1\u30AF\u8CEA(g)", value: form.p, onChange: (v) => setForm({ ...form, p: v }), numeric: true }), /* @__PURE__ */ React.createElement(LabeledInput, { label: "\u8102\u8CEA(g)", value: form.f, onChange: (v) => setForm({ ...form, f: v }), numeric: true }), /* @__PURE__ */ React.createElement(LabeledInput, { label: "\u70AD\u6C34\u5316\u7269(g)", value: form.c, onChange: (v) => setForm({ ...form, c: v }), numeric: true }), /* @__PURE__ */ React.createElement(LabeledInput, { label: "\u5869\u5206(g)", value: form.s, onChange: (v) => setForm({ ...form, s: v }), numeric: true })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30E1\u30A4\u30F3\u5206\u985E(1\u3064\u30FB\u30C7\u30FC\u30BF\u30D9\u30FC\u30B9\u4E00\u89A7\u306E\u4E26\u3073\u9806\u306B\u4F7F\u308F\u308C\u307E\u3059)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 } }, allTags.filter((t) => t !== "\u672A\u78BA\u5B9A").map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.mn === t, onClick: () => selectMain(t), small: true }))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 6 } }, "\u30B5\u30D6\u5206\u985E(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, allTags.filter((t) => t !== form.mn && t !== "\u672A\u78BA\u5B9A").map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: form.sub.includes(t), onClick: () => toggleSub(t), small: true, faded: !form.sub.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u5206\u985E\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u5206\u985E\u3092\u8FFD\u52A0")));
 }
 function FoodEditModal({ food, allTags, categoryOrder, onSave, onClose, onAddCategory }) {
   const [form, setForm] = useState({ n: food.n, mn: food.mn, sub: [...food.sb || []], k: String(food.k), p: String(food.p), f: String(food.f), c: String(food.c), s: String(food.s) });
@@ -1635,19 +1650,7 @@ function HealthInfoCard({ item, onEdit, onDelete, mediaTags }) {
     }
   )) : /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.danger } }, "YouTube\u306EURL\u3068\u3057\u3066\u8A8D\u8B58\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F")));
 }
-function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove, mediaTags, onAddTag, onRenameTag, onDeleteTag }) {
-  const [activeType, setActiveType] = useState("note");
-  const [form, setForm] = useState(emptyHealthForm());
-  const [editingId, setEditingId] = useState(null);
-  const [q, setQ] = useState("");
-  const [newTagText, setNewTagText] = useState("");
-  const [tagManageOpen, setTagManageOpen] = useState(false);
-  const [renameDrafts, setRenameDrafts] = useState({});
-  const selectTab = (k) => {
-    setActiveType(k);
-    setForm({ ...emptyHealthForm(), type: k });
-    setEditingId(null);
-  };
+function HealthInfoFormFields({ form, setForm, activeType, mediaTags, newTagText, setNewTagText, onAddTag }) {
   const toggleFormTag = (t) => setForm((prev) => ({ ...prev, tags: prev.tags.includes(t) ? prev.tags.filter((x) => x !== t) : [...prev.tags, t] }));
   const addNewTag = () => {
     const t = newTagText.trim();
@@ -1656,25 +1659,61 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove, mediaTags, on
     setForm((prev) => ({ ...prev, tags: prev.tags.includes(t) ? prev.tags : [...prev.tags, t] }));
     setNewTagText("");
   };
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("input", { placeholder: "\u30BF\u30A4\u30C8\u30EB", value: form.title, onChange: (e) => setForm({ ...form, title: e.target.value }), style: { ...inputStyle, width: "100%", marginBottom: 8 } }), activeType === "note" ? /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      value: form.content,
+      onChange: (e) => setForm({ ...form, content: e.target.value }),
+      placeholder: "AI\u306B\u89E3\u6790\u3057\u3066\u3082\u3089\u3063\u305F\u5185\u5BB9\u306A\u3069\u3092\u8CBC\u308A\u4ED8\u3051",
+      style: { width: "100%", height: 120, fontSize: 15, padding: 8, border: `0.5px solid ${C.border}`, borderRadius: 8, marginBottom: 10 }
+    }
+  ) : /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      placeholder: activeType === "youtube" ? "YouTube\u306EURL" : "Web\u30DA\u30FC\u30B8\u306EURL",
+      value: form.content,
+      onChange: (e) => setForm({ ...form, content: e.target.value }),
+      style: { ...inputStyle, width: "100%", marginBottom: 10 }
+    }
+  ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.textMuted, marginBottom: 6 } }, "\u6574\u7406\u30BF\u30B0(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, mediaTags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: mediaTags, selected: form.tags.includes(t), onClick: () => toggleFormTag(t), small: true, faded: !form.tags.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 12 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u30BF\u30B0\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u30BF\u30B0\u3092\u8FFD\u52A0")));
+}
+function HealthInfoEditModal({ item, mediaTags, onAddTag, onSave, onClose }) {
+  const [form, setForm] = useState({ title: item.title, content: item.content, tags: item.tags || [] });
+  const [newTagText, setNewTagText] = useState("");
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      onClick: onClose,
+      style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }
+    },
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        onClick: (e) => e.stopPropagation(),
+        style: { background: C.surface, borderRadius: 14, padding: "1.2rem", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }
+      },
+      /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 12 } }, "\u300C", item.title || "\u7121\u984C", "\u300D\u3092\u7DE8\u96C6"),
+      /* @__PURE__ */ React.createElement(HealthInfoFormFields, { form, setForm, activeType: item.type, mediaTags, newTagText, setNewTagText, onAddTag }),
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: () => onSave(form) }, "\u66F4\u65B0\u3059\u308B"), /* @__PURE__ */ React.createElement(Btn, { onClick: onClose }, "\u30AD\u30E3\u30F3\u30BB\u30EB"))
+    )
+  );
+}
+function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove, mediaTags, onAddTag, onRenameTag, onDeleteTag, onMoveTag }) {
+  const [activeType, setActiveType] = useState("note");
+  const [form, setForm] = useState(emptyHealthForm());
+  const [q, setQ] = useState("");
+  const [newTagText, setNewTagText] = useState("");
+  const [tagManageOpen, setTagManageOpen] = useState(false);
+  const [renameDrafts, setRenameDrafts] = useState({});
+  const [editingItem, setEditingItem] = useState(null);
+  const selectTab = (k) => {
+    setActiveType(k);
+    setForm({ ...emptyHealthForm(), type: k });
+  };
   const submit = () => {
     if (!form.title.trim()) return;
-    const payload = { ...form, type: activeType };
-    if (editingId) {
-      onUpdate(editingId, payload);
-    } else {
-      onAdd(payload);
-    }
+    onAdd({ ...form, type: activeType });
     setForm({ ...emptyHealthForm(), type: activeType });
-    setEditingId(null);
-  };
-  const startEdit = (item) => {
-    setForm({ title: item.title, type: item.type, content: item.content, tags: item.tags || [] });
-    setEditingId(item.id);
-    setActiveType(item.type);
-  };
-  const cancelEdit = () => {
-    setForm({ ...emptyHealthForm(), type: activeType });
-    setEditingId(null);
   };
   const filteredItems = items.filter((it) => {
     if (it.type !== activeType) return false;
@@ -1704,25 +1743,25 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove, mediaTags, on
       }
     },
     t.label
-  ))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 10 } }, editingId ? `${typeTabs.find((t) => t.k === activeType).label}\u3092\u7DE8\u96C6` : `${typeTabs.find((t) => t.k === activeType).label}\u3092\u8FFD\u52A0`), /* @__PURE__ */ React.createElement("input", { placeholder: "\u30BF\u30A4\u30C8\u30EB", value: form.title, onChange: (e) => setForm({ ...form, title: e.target.value }), style: { ...inputStyle, width: "100%", marginBottom: 8 } }), activeType === "note" ? /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      value: form.content,
-      onChange: (e) => setForm({ ...form, content: e.target.value }),
-      placeholder: "AI\u306B\u89E3\u6790\u3057\u3066\u3082\u3089\u3063\u305F\u5185\u5BB9\u306A\u3069\u3092\u8CBC\u308A\u4ED8\u3051",
-      style: { width: "100%", height: 120, fontSize: 15, padding: 8, border: `0.5px solid ${C.border}`, borderRadius: 8, marginBottom: 10 }
-    }
-  ) : /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      placeholder: activeType === "youtube" ? "YouTube\u306EURL" : "Web\u30DA\u30FC\u30B8\u306EURL",
-      value: form.content,
-      onChange: (e) => setForm({ ...form, content: e.target.value }),
-      style: { ...inputStyle, width: "100%", marginBottom: 10 }
-    }
-  ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.textMuted, marginBottom: 6 } }, "\u6574\u7406\u30BF\u30B0(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, mediaTags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: mediaTags, selected: form.tags.includes(t), onClick: () => toggleFormTag(t), small: true, faded: !form.tags.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 12 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u30BF\u30B0\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u30BF\u30B0\u3092\u8FFD\u52A0")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: submit }, editingId ? "\u66F4\u65B0\u3059\u308B" : "\u8FFD\u52A0\u3059\u308B"), editingId && /* @__PURE__ */ React.createElement(Btn, { onClick: cancelEdit }, "\u30AD\u30E3\u30F3\u30BB\u30EB"))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "0.9rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { onClick: () => setTagManageOpen((v) => !v), style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 15 } }, "\u30BF\u30B0\u3092\u7BA1\u7406"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, tagManageOpen ? "\u25B2 \u9589\u3058\u308B" : "\u25BC \u958B\u304F")), tagManageOpen && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8, marginTop: 12 } }, mediaTags.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted } }, "\u307E\u3060\u30BF\u30B0\u304C\u3042\u308A\u307E\u305B\u3093\u3002") : mediaTags.map((t) => {
+  ))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 10 } }, typeTabs.find((t) => t.k === activeType).label, "\u3092\u8FFD\u52A0"), /* @__PURE__ */ React.createElement(HealthInfoFormFields, { form, setForm, activeType, mediaTags, newTagText, setNewTagText, onAddTag }), /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: submit }, "\u8FFD\u52A0\u3059\u308B")), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "0.9rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { onClick: () => setTagManageOpen((v) => !v), style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 15 } }, "\u30BF\u30B0\u3092\u7BA1\u7406"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, tagManageOpen ? "\u25B2 \u9589\u3058\u308B" : "\u25BC \u958B\u304F")), tagManageOpen && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8, marginTop: 12 } }, mediaTags.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted } }, "\u307E\u3060\u30BF\u30B0\u304C\u3042\u308A\u307E\u305B\u3093\u3002") : mediaTags.map((t, i) => {
     var _a;
-    return /* @__PURE__ */ React.createElement("div", { key: t, style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: t, style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column" } }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => onMoveTag(t, -1),
+        disabled: i === 0,
+        style: { border: "none", background: "none", cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.3 : 1, fontSize: 12, color: C.textMuted }
+      },
+      "\u25B2"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => onMoveTag(t, 1),
+        disabled: i === mediaTags.length - 1,
+        style: { border: "none", background: "none", cursor: i === mediaTags.length - 1 ? "default" : "pointer", opacity: i === mediaTags.length - 1 ? 0.3 : 1, fontSize: 12, color: C.textMuted }
+      },
+      "\u25BC"
+    )), /* @__PURE__ */ React.createElement(
       "input",
       {
         value: (_a = renameDrafts[t]) != null ? _a : t,
@@ -1766,7 +1805,20 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove, mediaTags, on
       style: { border: "none", background: "none", cursor: i === filteredItems.length - 1 ? "default" : "pointer", opacity: i === filteredItems.length - 1 ? 0.3 : 1, fontSize: 14, color: C.textMuted }
     },
     "\u25BC"
-  )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement(HealthInfoCard, { item, onEdit: () => startEdit(item), onDelete: () => onDelete(item.id), mediaTags }))))));
+  )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement(HealthInfoCard, { item, onEdit: () => setEditingItem(item), onDelete: () => onDelete(item.id), mediaTags }))))), editingItem && /* @__PURE__ */ React.createElement(
+    HealthInfoEditModal,
+    {
+      key: editingItem.id,
+      item: editingItem,
+      mediaTags,
+      onAddTag,
+      onSave: (payload) => {
+        onUpdate(editingItem.id, { ...payload, type: editingItem.type });
+        setEditingItem(null);
+      },
+      onClose: () => setEditingItem(null)
+    }
+  ));
 }
 function fmtRange(range, unit) {
   if (!range) return "\u8A2D\u5B9A\u306A\u3057";
@@ -2181,6 +2233,15 @@ function App() {
     setHealthInfo(updatedItems);
     await saveJSON("healthInfo", updatedItems);
   };
+  const moveMediaTag = async (name, dir) => {
+    const pos = mediaTags.indexOf(name);
+    const swapPos = pos + dir;
+    if (pos === -1 || swapPos < 0 || swapPos >= mediaTags.length) return;
+    const updated = [...mediaTags];
+    [updated[pos], updated[swapPos]] = [updated[swapPos], updated[pos]];
+    setMediaTags(updated);
+    await saveJSON("mediaTags", updated);
+  };
   const orderedSlots = [...withTotals].reverse();
   const orderedIndexOf = (id) => withTotals.findIndex((s) => s.id === id);
   return /* @__PURE__ */ React.createElement("div", { style: { fontFamily: "'Zen Kaku Gothic New','Noto Sans JP',sans-serif", color: C.text, background: C.bg, padding: 18, borderRadius: 14 } }, /* @__PURE__ */ React.createElement("style", null, `input, select, button, textarea { font-family: inherit; }
@@ -2261,7 +2322,8 @@ function App() {
       mediaTags,
       onAddTag: addMediaTag,
       onRenameTag: renameMediaTag,
-      onDeleteTag: deleteMediaTag
+      onDeleteTag: deleteMediaTag,
+      onMoveTag: moveMediaTag
     }
   ), tab === "import" && /* @__PURE__ */ React.createElement(ImportTab, { onImport: importData, onExportAll: exportAllData, onImportAll: importAllData }), tab === "log" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u65E5", onClick: () => setIso(addDays(iso, -1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(iso)), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u7FCC\u65E5", onClick: () => setIso(addDays(iso, 1)) }, "\u2192")), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 15, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: day.refeed, onChange: (e) => persistDay({ ...day, refeed: e.target.checked }) }), "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10 } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 15, color: C.textMuted } }, "\u4F53\u91CD"), /* @__PURE__ */ React.createElement(
     "input",
@@ -2310,26 +2372,20 @@ function App() {
         background: C.surface,
         border: `0.5px solid ${C.border}`,
         borderRadius: 12,
-        padding: "0.8rem 1.1rem",
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 12,
-        alignItems: "center",
-        justifyContent: "space-between"
+        padding: "0.8rem 1.1rem"
       }
     },
-    unconfirmedTotal > 0 ? /* @__PURE__ */ React.createElement("span", { onClick: jumpToFirstUnconfirmed, style: { fontSize: 15, color: C.warnText, cursor: "pointer", textDecoration: "underline" } }, "\u26A0 \u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u304C", unconfirmedTotal, "\u4EF6\u3042\u308A\u307E\u3059(\u30BF\u30C3\u30D7\u3057\u3066\u79FB\u52D5)") : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 15, color: C.textMuted } }, "\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u306F\u3042\u308A\u307E\u305B\u3093"),
-    /* @__PURE__ */ React.createElement(
-      Btn,
-      {
-        small: true,
-        onClick: () => {
-          setMd(buildMarkdown(iso, day, target, weights));
-          setShowMd(true);
-        }
-      },
-      "Markdown\u51FA\u529B"
-    )
+    unconfirmedTotal > 0 ? /* @__PURE__ */ React.createElement("span", { onClick: jumpToFirstUnconfirmed, style: { fontSize: 15, color: C.warnText, cursor: "pointer", textDecoration: "underline" } }, "\u26A0 \u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u304C", unconfirmedTotal, "\u4EF6\u3042\u308A\u307E\u3059(\u30BF\u30C3\u30D7\u3057\u3066\u79FB\u52D5)") : /* @__PURE__ */ React.createElement("span", { style: { fontSize: 15, color: C.textMuted } }, "\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u306F\u3042\u308A\u307E\u305B\u3093")
+  ), /* @__PURE__ */ React.createElement(
+    Btn,
+    {
+      wide: true,
+      onClick: () => {
+        setMd(buildMarkdown(iso, day, target, weights));
+        setShowMd(true);
+      }
+    },
+    "Markdown\u51FA\u529B"
   ), showMd && /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 15 } }, "Markdown\u51FA\u529B"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
     Btn,
     {
