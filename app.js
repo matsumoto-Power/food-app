@@ -304,14 +304,21 @@ const TAG_COLOR_INDEX = {
   "\u304A\u5F01\u5F53/\u4E3C": 0,
   \u304A\u83D3\u5B50\u985E: 7
 };
-function parseTrainingWeightMarkdown(text) {
-  const re = /^##\s*(\d{4}-\d{2}-\d{2})[（(].*?[）)]\s*体重:\s*([\d.]+)\s*kg/gm;
+function parseTrainingMarkdown(text) {
+  const headerRe = /^##\s*(\d{4}-\d{2}-\d{2})[（(].*?[）)]\s*体重:\s*([\d.]+)\s*kg/;
+  const blocks = text.split(/\n(?=##\s*\d{4}-\d{2}-\d{2})/);
   const out = [];
-  let m;
-  while ((m = re.exec(text)) !== null) {
-    const weight = parseFloat(m[2]);
-    if (!isNaN(weight)) out.push({ date: m[1], weight });
-  }
+  blocks.forEach((block) => {
+    const lines = block.split("\n");
+    const headerMatch = lines[0].match(headerRe);
+    if (!headerMatch) return;
+    const entry = { date: headerMatch[1] };
+    const weight = parseFloat(headerMatch[2]);
+    if (!isNaN(weight)) entry.weight = weight;
+    const exerciseLines = lines.filter((l) => l.trim().startsWith("- \u5B9F\u65BD:")).map((l) => l.replace(/^-\s*実施:\s*/, "").trim());
+    if (exerciseLines.length > 0) entry.training = exerciseLines.join("\n");
+    out.push(entry);
+  });
   return out;
 }
 function parseCsvText(text) {
@@ -963,7 +970,7 @@ function ImportTab({ onImport, onExportAll, onImportAll }) {
         return;
       }
     } else {
-      arr = parseTrainingWeightMarkdown(trimmed);
+      arr = parseTrainingMarkdown(trimmed);
       if (arr.length === 0) {
         setResult({ error: "JSON\u914D\u5217\u3001\u307E\u305F\u306F\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u30BF\u30A4\u30DE\u30FC\u30A2\u30D7\u30EA\u306E\u30DE\u30FC\u30AF\u30C0\u30A6\u30F3\u51FA\u529B(\u300C## \u65E5\u4ED8\uFF08\u66DC\u65E5\uFF09 \u4F53\u91CD: \u25EF\u25EFkg\u300D\u5F62\u5F0F)\u306E\u3069\u3061\u3089\u306E\u5F62\u5F0F\u3068\u3057\u3066\u3082\u8AAD\u307F\u53D6\u308C\u307E\u305B\u3093\u3067\u3057\u305F\u3002" });
         return;
@@ -989,7 +996,7 @@ function ImportTab({ onImport, onExportAll, onImportAll }) {
       placeholder: "\u3053\u3053\u306B\u300C\u5168\u30C7\u30FC\u30BF\u3092\u66F8\u304D\u51FA\u3059\u300D\u3067\u30B3\u30D4\u30FC\u3057\u305F\u5185\u5BB9\u3092\u8CBC\u308A\u4ED8\u3051",
       style: { width: "100%", height: 120, fontSize: 11, fontFamily: "monospace", padding: 8, border: `0.5px solid ${C.border}`, borderRadius: 8, marginBottom: 8 }
     }
-  ), /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: doRestore }, restoreBusy ? "\u8AAD\u307F\u8FBC\u307F\u4E2D\u2026" : "\u3053\u306E\u5185\u5BB9\u3067\u4E0A\u66F8\u304D\u3059\u308B"), restoreResult && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: restoreResult.error ? C.danger : C.text, marginTop: 8 } }, restoreResult.error ? restoreResult.error : `\u8AAD\u307F\u8FBC\u307F\u307E\u3057\u305F(\u8A18\u9332${restoreResult.count}\u65E5\u5206\u3092\u542B\u3080)\u3002`), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: C.textMuted, marginTop: 6 } }, "\u3053\u306E\u64CD\u4F5C\u306F\u4ECA\u958B\u3044\u3066\u3044\u308B\u30A2\u30D7\u30EA\u306E\u5185\u5BB9\u3092\u5168\u3066\u4E0A\u66F8\u304D\u3057\u307E\u3059\u3002")), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 8 } }, "\u904E\u53BB\u306E\u8A18\u9332\u3092\u307E\u3068\u3081\u3066\u53D6\u308A\u8FBC\u3080"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: C.textMuted, lineHeight: 1.6 } }, "Notion\u306A\u3069\u306E\u904E\u53BB\u306E\u98DF\u4E8B\u8A18\u9332\u3092\u5909\u63DB\u3057\u305FJSON\u30C7\u30FC\u30BF\u3001\u307E\u305F\u306F", /* @__PURE__ */ React.createElement("b", null, "\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u30BF\u30A4\u30DE\u30FC\u30A2\u30D7\u30EA\u306E\u30DE\u30FC\u30AF\u30C0\u30A6\u30F3\u51FA\u529B(\u4F53\u91CD\u306E\u8A18\u9332)"), "\u3092\u3001\u3053\u3053\u306B\u8CBC\u308A\u4ED8\u3051\u3066\u300C\u53D6\u308A\u8FBC\u3080\u300D\u3092\u62BC\u3059\u3068\u3001\u65E5\u4ED8\u3054\u3068\u306E\u8A18\u9332\u3068\u3057\u3066\u4E00\u62EC\u3067\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002\u3069\u3061\u3089\u306E\u5F62\u5F0F\u304B\u306F\u81EA\u52D5\u3067\u5224\u5B9A\u3057\u307E\u3059\u3002\u5909\u63DB\u304C\u5FC5\u8981\u306A\u5834\u5408\u306F\u3001\u5143\u306E\u8A18\u9332(Notion\u306E\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u7B49)\u3092Claude\u306B\u6E21\u3057\u3066\u3082\u3089\u3048\u308C\u3070\u3001\u3053\u306E\u5F62\u5F0F\u306B\u5909\u63DB\u3057\u307E\u3059\u3002\u6307\u5B9A\u3057\u305F\u9805\u76EE(\u4F53\u91CD\u306A\u3069)\u3060\u3051\u304C\u66F4\u65B0\u3055\u308C\u3001\u305D\u306E\u65E5\u306B\u65E2\u306B\u3042\u308B\u4ED6\u306E\u8A18\u9332(\u98DF\u4E8B\u5185\u5BB9\u306A\u3069)\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: doRestore }, restoreBusy ? "\u8AAD\u307F\u8FBC\u307F\u4E2D\u2026" : "\u3053\u306E\u5185\u5BB9\u3067\u4E0A\u66F8\u304D\u3059\u308B"), restoreResult && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: restoreResult.error ? C.danger : C.text, marginTop: 8 } }, restoreResult.error ? restoreResult.error : `\u8AAD\u307F\u8FBC\u307F\u307E\u3057\u305F(\u8A18\u9332${restoreResult.count}\u65E5\u5206\u3092\u542B\u3080)\u3002`), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: C.textMuted, marginTop: 6 } }, "\u3053\u306E\u64CD\u4F5C\u306F\u4ECA\u958B\u3044\u3066\u3044\u308B\u30A2\u30D7\u30EA\u306E\u5185\u5BB9\u3092\u5168\u3066\u4E0A\u66F8\u304D\u3057\u307E\u3059\u3002")), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 8 } }, "\u904E\u53BB\u306E\u8A18\u9332\u3092\u307E\u3068\u3081\u3066\u53D6\u308A\u8FBC\u3080"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: C.textMuted, lineHeight: 1.6 } }, "Notion\u306A\u3069\u306E\u904E\u53BB\u306E\u98DF\u4E8B\u8A18\u9332\u3092\u5909\u63DB\u3057\u305FJSON\u30C7\u30FC\u30BF\u3001\u307E\u305F\u306F", /* @__PURE__ */ React.createElement("b", null, "\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u30BF\u30A4\u30DE\u30FC\u30A2\u30D7\u30EA\u306E\u30DE\u30FC\u30AF\u30C0\u30A6\u30F3\u51FA\u529B(\u4F53\u91CD\u30FB\u5B9F\u65BD\u3057\u305F\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u5185\u5BB9)"), "\u3092\u3001\u3053\u3053\u306B\u8CBC\u308A\u4ED8\u3051\u3066\u300C\u53D6\u308A\u8FBC\u3080\u300D\u3092\u62BC\u3059\u3068\u3001\u65E5\u4ED8\u3054\u3068\u306E\u8A18\u9332\u3068\u3057\u3066\u4E00\u62EC\u3067\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002\u3069\u3061\u3089\u306E\u5F62\u5F0F\u304B\u306F\u81EA\u52D5\u3067\u5224\u5B9A\u3057\u307E\u3059\u3002\u5909\u63DB\u304C\u5FC5\u8981\u306A\u5834\u5408\u306F\u3001\u5143\u306E\u8A18\u9332(Notion\u306E\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\u7B49)\u3092Claude\u306B\u6E21\u3057\u3066\u3082\u3089\u3048\u308C\u3070\u3001\u3053\u306E\u5F62\u5F0F\u306B\u5909\u63DB\u3057\u307E\u3059\u3002\u6307\u5B9A\u3057\u305F\u9805\u76EE(\u4F53\u91CD\u30FB\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u5185\u5BB9\u306A\u3069)\u3060\u3051\u304C\u66F4\u65B0\u3055\u308C\u3001\u305D\u306E\u65E5\u306B\u65E2\u306B\u3042\u308B\u4ED6\u306E\u8A18\u9332(\u98DF\u4E8B\u5185\u5BB9\u306A\u3069)\u306F\u4FDD\u6301\u3055\u308C\u307E\u3059\u3002")), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: text,
