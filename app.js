@@ -777,7 +777,7 @@ function FoodEditModal({ food, allTags, categoryOrder, onSave, onClose, onAddCat
   );
 }
 const PAGE_SIZE = 100;
-function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onImportMany, onAddCategory, editRequest }) {
+function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onDelete, onImportMany, onAddCategory, editRequest }) {
   const [q, setQ] = useState("");
   const [tag, setTag] = useState("");
   const [page, setPage] = useState(1);
@@ -883,7 +883,17 @@ function FoodsTab({ foods, categoryOrder, onAdd, onUpdate, onImportMany, onAddCa
       },
       small: true
     }
-  )))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted } }, filtered.length, "\u54C1\u3092\u8868\u793A\u4E2D(\u5168", foods.length, "\u54C1) \u30FB ", pageClamped, "/", totalPages, "\u30DA\u30FC\u30B8"), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, overflow: "hidden" } }, /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { background: C.surfaceMuted, color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", { style: cellStyle }, "\u540D\u524D"), /* @__PURE__ */ React.createElement("td", { style: cellStyle }, "\u5206\u985E"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "\u5869"), /* @__PURE__ */ React.createElement("td", null))), /* @__PURE__ */ React.createElement("tbody", null, paged.map((f) => /* @__PURE__ */ React.createElement("tr", { key: f.n, style: { borderTop: `0.5px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("td", { style: cellStyle }, f.n), /* @__PURE__ */ React.createElement("td", { style: cellStyle }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } }, /* @__PURE__ */ React.createElement(TagPill, { tag: f.mn, order: categoryOrder, small: true }), (f.sb || []).map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, small: true, faded: true })))), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.k), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.p), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.f), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.c), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.s), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, /* @__PURE__ */ React.createElement("button", { onClick: () => setEditingFood(f), "aria-label": "\u7DE8\u96C6", style: { border: "none", background: "none", color: C.textMuted, cursor: "pointer", fontSize: 14 } }, "\u7DE8\u96C6"))))))), totalPages > 1 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u306E\u30DA\u30FC\u30B8", onClick: () => setPage((p) => Math.max(1, p - 1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14.5, color: C.textMuted } }, pageClamped, " / ", totalPages), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u6B21\u306E\u30DA\u30FC\u30B8", onClick: () => setPage((p) => Math.min(totalPages, p + 1)) }, "\u2192")), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "0.9rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { onClick: () => setCsvOpen((v) => !v), style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 15 } }, "CSV\u3067\u4E00\u62EC\u767B\u9332\u30FB\u66F4\u65B0"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, csvOpen ? "\u25B2 \u9589\u3058\u308B" : "\u25BC \u958B\u304F")), csvOpen && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 10 } }, "Notion\u306A\u3069\u304B\u3089\u66F8\u304D\u51FA\u3057\u305F\u98DF\u54C1DB\u306ECSV\u3092\u305D\u306E\u307E\u307E\u8CBC\u308A\u4ED8\u3051\u3066\u53D6\u308A\u8FBC\u3081\u307E\u3059\u3002\u5217\u306E\u4E26\u3073\u9806\u306F\u81EA\u7531\u3067\u3001\u300C\u540D\u524D\u300D\u300C\u5206\u985E\u300D\u300Ckcal\u300D\u300C\u30BF\u30F3\u30D1\u30AF\u8CEA(g)\u300D\u300C\u8102(g)\u300D\u300C\u70AD(g)\u300D\u300C\u5869(g)\u300D\u3068\u3044\u3046\u898B\u51FA\u3057\u540D\u3067\u5217\u3092\u5224\u5225\u3057\u307E\u3059(\u300C\u5206\u985E\u300D\u306F\u30AB\u30F3\u30DE\u533A\u5207\u308A\u3067\u3001\u5148\u982D\u3092\u30E1\u30A4\u30F3\u5206\u985E\u3068\u3057\u3066\u6271\u3044\u307E\u3059)\u3002\u540C\u3058\u540D\u524D\u306E\u98DF\u54C1\u304C\u65E2\u306B\u3042\u308B\u5834\u5408\u306F\u6570\u5024\u3092\u4E0A\u66F8\u304D\u3057\u3001\u7121\u3044\u5834\u5408\u306F\u65B0\u898F\u767B\u9332\u3057\u307E\u3059\u3002"), /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted } }, filtered.length, "\u54C1\u3092\u8868\u793A\u4E2D(\u5168", foods.length, "\u54C1) \u30FB ", pageClamped, "/", totalPages, "\u30DA\u30FC\u30B8"), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, overflow: "hidden" } }, /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { background: C.surfaceMuted, color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", { style: cellStyle }, "\u540D\u524D"), /* @__PURE__ */ React.createElement("td", { style: cellStyle }, "\u5206\u985E"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, "\u5869"), /* @__PURE__ */ React.createElement("td", null))), /* @__PURE__ */ React.createElement("tbody", null, paged.map((f) => /* @__PURE__ */ React.createElement("tr", { key: f.n, style: { borderTop: `0.5px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("td", { style: cellStyle }, f.n), /* @__PURE__ */ React.createElement("td", { style: cellStyle }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } }, /* @__PURE__ */ React.createElement(TagPill, { tag: f.mn, order: categoryOrder, small: true }), (f.sb || []).map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, small: true, faded: true })))), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.k), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.p), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.f), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.c), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, f.s), /* @__PURE__ */ React.createElement("td", { style: { ...cellStyle, textAlign: "right" } }, /* @__PURE__ */ React.createElement("button", { onClick: () => setEditingFood(f), "aria-label": "\u7DE8\u96C6", style: { border: "none", background: "none", color: C.textMuted, cursor: "pointer", fontSize: 14 } }, "\u7DE8\u96C6"), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        if (window.confirm(`\u300C${f.n}\u300D\u3092\u524A\u9664\u3057\u307E\u3059\u304B?\u3059\u3067\u306B\u8A18\u9332\u6E08\u307F\u306E\u904E\u53BB\u306E\u98DF\u4E8B\u8A18\u9332\u306E\u6570\u5024\u306F\u305D\u306E\u307E\u307E\u6B8B\u308A\u307E\u3059\u3002`)) onDelete(f.n);
+      },
+      "aria-label": "\u524A\u9664",
+      style: { border: "none", background: "none", color: C.danger, cursor: "pointer", fontSize: 14, marginLeft: 8 }
+    },
+    "\u524A\u9664"
+  ))))))), totalPages > 1 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "center", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u306E\u30DA\u30FC\u30B8", onClick: () => setPage((p) => Math.max(1, p - 1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14.5, color: C.textMuted } }, pageClamped, " / ", totalPages), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u6B21\u306E\u30DA\u30FC\u30B8", onClick: () => setPage((p) => Math.min(totalPages, p + 1)) }, "\u2192")), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "0.9rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { onClick: () => setCsvOpen((v) => !v), style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 15 } }, "CSV\u3067\u4E00\u62EC\u767B\u9332\u30FB\u66F4\u65B0"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, csvOpen ? "\u25B2 \u9589\u3058\u308B" : "\u25BC \u958B\u304F")), csvOpen && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 10 } }, "Notion\u306A\u3069\u304B\u3089\u66F8\u304D\u51FA\u3057\u305F\u98DF\u54C1DB\u306ECSV\u3092\u305D\u306E\u307E\u307E\u8CBC\u308A\u4ED8\u3051\u3066\u53D6\u308A\u8FBC\u3081\u307E\u3059\u3002\u5217\u306E\u4E26\u3073\u9806\u306F\u81EA\u7531\u3067\u3001\u300C\u540D\u524D\u300D\u300C\u5206\u985E\u300D\u300Ckcal\u300D\u300C\u30BF\u30F3\u30D1\u30AF\u8CEA(g)\u300D\u300C\u8102(g)\u300D\u300C\u70AD(g)\u300D\u300C\u5869(g)\u300D\u3068\u3044\u3046\u898B\u51FA\u3057\u540D\u3067\u5217\u3092\u5224\u5225\u3057\u307E\u3059(\u300C\u5206\u985E\u300D\u306F\u30AB\u30F3\u30DE\u533A\u5207\u308A\u3067\u3001\u5148\u982D\u3092\u30E1\u30A4\u30F3\u5206\u985E\u3068\u3057\u3066\u6271\u3044\u307E\u3059)\u3002\u540C\u3058\u540D\u524D\u306E\u98DF\u54C1\u304C\u65E2\u306B\u3042\u308B\u5834\u5408\u306F\u6570\u5024\u3092\u4E0A\u66F8\u304D\u3057\u3001\u7121\u3044\u5834\u5408\u306F\u65B0\u898F\u767B\u9332\u3057\u307E\u3059\u3002"), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: csvText,
@@ -1131,6 +1141,7 @@ function CalendarTab({ target, todayIso, onOpenInHome, onViewSummary }) {
     const isToday = iso === todayIso;
     const isSelected = iso === selectedIso;
     const dim = refeedOnly && !(log && log.refeed);
+    const hasUnconfirmed = !!log && log.slots.some((s) => s.items.some((it) => !it.confirmed));
     return /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1148,13 +1159,13 @@ function CalendarTab({ target, todayIso, onOpenInHome, onViewSummary }) {
           opacity: dim ? 0.3 : 1,
           cursor: "pointer",
           fontSize: 14.5,
-          color: C.text
+          color: hasUnconfirmed ? C.warnText : C.text
         }
       },
-      /* @__PURE__ */ React.createElement("span", null, d),
+      /* @__PURE__ */ React.createElement("span", null, d, hasUnconfirmed && "!"),
       /* @__PURE__ */ React.createElement("span", { style: { display: "flex", gap: 2, height: 6 } }, hasRecord && /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: over ? C.danger : C.success } }), (log == null ? void 0 : log.refeed) && /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "#F2A93C" } }))
     );
-  }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onViewSummary(`${monthStr}-01`) }, "\u3053\u306E\u6708\u306E\u30B5\u30DE\u30EA\u30FC\u3092\u898B\u308B \u2192")), selectedDay && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(selectedIso)), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onOpenInHome(selectedIso) }, "\u30DB\u30FC\u30E0\u3067\u7DE8\u96C6\u3059\u308B")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 16, fontSize: 15 } }, /* @__PURE__ */ React.createElement("span", null, "\u4F53\u91CD: ", /* @__PURE__ */ React.createElement("strong", null, selectedDay.weight != null ? `${selectedDay.weight}kg` : "\u672A\u8A18\u9332")), /* @__PURE__ */ React.createElement("span", { style: { color: selectedDay.refeed ? C.warnText : C.textMuted } }, "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4: ", selectedDay.refeed ? "\u306F\u3044" : "\u3044\u3044\u3048")), /* @__PURE__ */ React.createElement(NutrientBars, { target, slots: withTotals })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, withTotals.length === 0 || withTotals.every((s) => s.items.length === 0) ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, color: C.textMuted, textAlign: "center", padding: "1rem" } }, "\u3053\u306E\u65E5\u306E\u8A18\u9332\u306F\u3042\u308A\u307E\u305B\u3093") : withTotals.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: s.id, style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 17, marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: colorForIndex(i) } }), s.id), s.items.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted } }, "(\u8A18\u9332\u306A\u3057)") : /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", null, "\u98DF\u54C1\u540D"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u5869"))), /* @__PURE__ */ React.createElement("tbody", null, s.items.map((it) => /* @__PURE__ */ React.createElement("tr", { key: it.id }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0" } }, it.name, !it.confirmed && /* @__PURE__ */ React.createElement("span", { style: { background: C.warnBg, color: C.warnText, fontSize: 12.5, padding: "1px 6px", borderRadius: 6, marginLeft: 6 } }, "\u672A\u78BA\u5B9A")), it.confirmed ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.kcal), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.p), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.f), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.c), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.salt)) : /* @__PURE__ */ React.createElement("td", { colSpan: 5, style: { textAlign: "right", color: C.textMuted } }, "\u6804\u990A\u7D20\u672A\u78BA\u5B9A"))))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "right", fontSize: 14.5, color: C.textMuted, marginTop: 6 } }, "\u5C0F\u8A08 ", s.totals.kcal, "kcal \u30FB P", Math.round(s.totals.p * 10) / 10, "g \u30FB \u8102", Math.round(s.totals.f * 10) / 10, "g \u30FB \u70AD", Math.round(s.totals.c * 10) / 10, "g \u30FB \u5869", Math.round(s.totals.salt * 10) / 10, "g")))), selectedDay.aiNote && /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, fontSize: 15, marginBottom: 8 } }, "AI\u89E3\u6790\u30E1\u30E2"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, whiteSpace: "pre-wrap" } }, selectedDay.aiNote)), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, fontSize: 15, marginBottom: 8 } }, "\u3053\u306E\u65E5\u306E\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u5185\u5BB9"), /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: C.textMuted, marginTop: 8 } }, "\u25CF\u7DD1=\u8A18\u9332\u3042\u308A(\u76EE\u6A19\u5185) \u25CF\u8D64=\u76EE\u6A19\u8D85\u904E \u25CF\u30AA\u30EC\u30F3\u30B8=\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4 \u300C!\u300D=\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u3042\u308A")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onViewSummary(`${monthStr}-01`) }, "\u3053\u306E\u6708\u306E\u30B5\u30DE\u30EA\u30FC\u3092\u898B\u308B \u2192")), selectedDay && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(selectedIso)), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onOpenInHome(selectedIso) }, "\u30DB\u30FC\u30E0\u3067\u7DE8\u96C6\u3059\u308B")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 16, fontSize: 15 } }, /* @__PURE__ */ React.createElement("span", null, "\u4F53\u91CD: ", /* @__PURE__ */ React.createElement("strong", null, selectedDay.weight != null ? `${selectedDay.weight}kg` : "\u672A\u8A18\u9332")), /* @__PURE__ */ React.createElement("span", { style: { color: selectedDay.refeed ? C.warnText : C.textMuted } }, "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4: ", selectedDay.refeed ? "\u306F\u3044" : "\u3044\u3044\u3048")), /* @__PURE__ */ React.createElement(NutrientBars, { target, slots: withTotals })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, withTotals.length === 0 || withTotals.every((s) => s.items.length === 0) ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, color: C.textMuted, textAlign: "center", padding: "1rem" } }, "\u3053\u306E\u65E5\u306E\u8A18\u9332\u306F\u3042\u308A\u307E\u305B\u3093") : withTotals.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: s.id, style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 17, marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: colorForIndex(i) } }), s.id), s.items.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted } }, "(\u8A18\u9332\u306A\u3057)") : /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", null, "\u98DF\u54C1\u540D"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u5869"))), /* @__PURE__ */ React.createElement("tbody", null, s.items.map((it) => /* @__PURE__ */ React.createElement("tr", { key: it.id }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0" } }, it.name, !it.confirmed && /* @__PURE__ */ React.createElement("span", { style: { background: C.warnBg, color: C.warnText, fontSize: 12.5, padding: "1px 6px", borderRadius: 6, marginLeft: 6 } }, "\u672A\u78BA\u5B9A")), it.confirmed ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.kcal), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.p), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.f), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.c), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.salt)) : /* @__PURE__ */ React.createElement("td", { colSpan: 5, style: { textAlign: "right", color: C.textMuted } }, "\u6804\u990A\u7D20\u672A\u78BA\u5B9A"))))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "right", fontSize: 14.5, color: C.textMuted, marginTop: 6 } }, "\u5C0F\u8A08 ", s.totals.kcal, "kcal \u30FB P", Math.round(s.totals.p * 10) / 10, "g \u30FB \u8102", Math.round(s.totals.f * 10) / 10, "g \u30FB \u70AD", Math.round(s.totals.c * 10) / 10, "g \u30FB \u5869", Math.round(s.totals.salt * 10) / 10, "g")))), selectedDay.aiNote && /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, fontSize: 15, marginBottom: 8 } }, "AI\u89E3\u6790\u30E1\u30E2"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, whiteSpace: "pre-wrap" } }, selectedDay.aiNote)), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, fontSize: 15, marginBottom: 8 } }, "\u3053\u306E\u65E5\u306E\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u5185\u5BB9"), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: selectedDay.training || "",
@@ -1610,9 +1621,10 @@ function youtubeEmbedUrl(url) {
     return null;
   }
 }
-const emptyHealthForm = () => ({ title: "", type: "note", content: "" });
-function HealthInfoCard({ item, onEdit, onDelete }) {
-  return /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 16 } }, item.title || "(\u7121\u984C)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement("button", { onClick: onEdit, style: { border: "none", background: "none", color: C.textMuted, cursor: "pointer", fontSize: 14 } }, "\u7DE8\u96C6"), /* @__PURE__ */ React.createElement("button", { onClick: onDelete, style: { border: "none", background: "none", color: C.danger, cursor: "pointer", fontSize: 14 } }, "\u524A\u9664"))), item.type === "note" && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, whiteSpace: "pre-wrap", color: C.text } }, item.content), item.type === "webpage" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, /* @__PURE__ */ React.createElement("a", { href: item.content, target: "_blank", rel: "noreferrer", style: { fontSize: 14.5, color: C.accent } }, item.content), /* @__PURE__ */ React.createElement("iframe", { src: item.content, title: item.title, style: { width: "100%", height: 360, border: `0.5px solid ${C.border}`, borderRadius: 8, background: "#fff" } }), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.textMuted } }, "\u30B5\u30A4\u30C8\u306B\u3088\u3063\u3066\u306F\u57CB\u3081\u8FBC\u307F\u8868\u793A\u3067\u304D\u306A\u3044\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002\u305D\u306E\u969B\u306F\u4E0A\u306E\u30EA\u30F3\u30AF\u304B\u3089\u958B\u3044\u3066\u304F\u3060\u3055\u3044\u3002")), item.type === "youtube" && (youtubeEmbedUrl(item.content) ? /* @__PURE__ */ React.createElement("div", { style: { position: "relative", paddingTop: "56.25%" } }, /* @__PURE__ */ React.createElement(
+const emptyHealthForm = () => ({ title: "", type: "note", content: "", tags: [] });
+function HealthInfoCard({ item, onEdit, onDelete, mediaTags }) {
+  const [noteOpen, setNoteOpen] = useState(false);
+  return /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 16 } }, item.title || "(\u7121\u984C)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement("button", { onClick: onEdit, style: { border: "none", background: "none", color: C.textMuted, cursor: "pointer", fontSize: 14 } }, "\u7DE8\u96C6"), /* @__PURE__ */ React.createElement("button", { onClick: onDelete, style: { border: "none", background: "none", color: C.danger, cursor: "pointer", fontSize: 14 } }, "\u524A\u9664"))), (item.tags || []).length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 4 } }, item.tags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: mediaTags, small: true }))), item.type === "note" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { onClick: () => setNoteOpen((v) => !v), style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, color: C.textMuted } }, "\u672C\u6587"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, color: C.textMuted } }, noteOpen ? "\u25B2 \u9589\u3058\u308B" : "\u25BC \u958B\u304F")), noteOpen && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, whiteSpace: "pre-wrap", color: C.text, marginTop: 8 } }, item.content)), item.type === "webpage" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, /* @__PURE__ */ React.createElement("a", { href: item.content, target: "_blank", rel: "noreferrer", style: { fontSize: 14.5, color: C.accent } }, item.content), /* @__PURE__ */ React.createElement("iframe", { src: item.content, title: item.title, style: { width: "100%", height: 360, border: `0.5px solid ${C.border}`, borderRadius: 8, background: "#fff" } }), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.textMuted } }, "\u30B5\u30A4\u30C8\u306B\u3088\u3063\u3066\u306F\u57CB\u3081\u8FBC\u307F\u8868\u793A\u3067\u304D\u306A\u3044\u5834\u5408\u304C\u3042\u308A\u307E\u3059\u3002\u305D\u306E\u969B\u306F\u4E0A\u306E\u30EA\u30F3\u30AF\u304B\u3089\u958B\u3044\u3066\u304F\u3060\u3055\u3044\u3002")), item.type === "youtube" && (youtubeEmbedUrl(item.content) ? /* @__PURE__ */ React.createElement("div", { style: { position: "relative", paddingTop: "56.25%" } }, /* @__PURE__ */ React.createElement(
     "iframe",
     {
       src: youtubeEmbedUrl(item.content),
@@ -1623,15 +1635,26 @@ function HealthInfoCard({ item, onEdit, onDelete }) {
     }
   )) : /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.danger } }, "YouTube\u306EURL\u3068\u3057\u3066\u8A8D\u8B58\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F")));
 }
-function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove }) {
+function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove, mediaTags, onAddTag, onRenameTag, onDeleteTag }) {
   const [activeType, setActiveType] = useState("note");
   const [form, setForm] = useState(emptyHealthForm());
   const [editingId, setEditingId] = useState(null);
+  const [q, setQ] = useState("");
+  const [newTagText, setNewTagText] = useState("");
+  const [tagManageOpen, setTagManageOpen] = useState(false);
+  const [renameDrafts, setRenameDrafts] = useState({});
   const selectTab = (k) => {
     setActiveType(k);
-    setForm(emptyHealthForm());
+    setForm({ ...emptyHealthForm(), type: k });
     setEditingId(null);
-    setForm((f) => ({ ...f, type: k }));
+  };
+  const toggleFormTag = (t) => setForm((prev) => ({ ...prev, tags: prev.tags.includes(t) ? prev.tags.filter((x) => x !== t) : [...prev.tags, t] }));
+  const addNewTag = () => {
+    const t = newTagText.trim();
+    if (!t) return;
+    onAddTag(t);
+    setForm((prev) => ({ ...prev, tags: prev.tags.includes(t) ? prev.tags : [...prev.tags, t] }));
+    setNewTagText("");
   };
   const submit = () => {
     if (!form.title.trim()) return;
@@ -1645,7 +1668,7 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove }) {
     setEditingId(null);
   };
   const startEdit = (item) => {
-    setForm({ title: item.title, type: item.type, content: item.content });
+    setForm({ title: item.title, type: item.type, content: item.content, tags: item.tags || [] });
     setEditingId(item.id);
     setActiveType(item.type);
   };
@@ -1653,7 +1676,12 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove }) {
     setForm({ ...emptyHealthForm(), type: activeType });
     setEditingId(null);
   };
-  const filteredItems = items.filter((it) => it.type === activeType);
+  const filteredItems = items.filter((it) => {
+    if (it.type !== activeType) return false;
+    if (!q.trim()) return true;
+    const s = q.trim().toLowerCase();
+    return it.title.toLowerCase().includes(s) || (it.content || "").toLowerCase().includes(s) || (it.tags || []).some((t) => t.toLowerCase().includes(s));
+  });
   const typeTabs = [
     { k: "note", label: "\u30E1\u30E2" },
     { k: "webpage", label: "Web" },
@@ -1692,7 +1720,37 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove }) {
       onChange: (e) => setForm({ ...form, content: e.target.value }),
       style: { ...inputStyle, width: "100%", marginBottom: 10 }
     }
-  ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: submit }, editingId ? "\u66F4\u65B0\u3059\u308B" : "\u8FFD\u52A0\u3059\u308B"), editingId && /* @__PURE__ */ React.createElement(Btn, { onClick: cancelEdit }, "\u30AD\u30E3\u30F3\u30BB\u30EB"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, filteredItems.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, color: C.textMuted } }, "\u307E\u3060\u4F55\u3082\u767B\u9332\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002") : filteredItems.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: item.id, style: { display: "flex", gap: 8, alignItems: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2, paddingTop: 4 } }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.textMuted, marginBottom: 6 } }, "\u6574\u7406\u30BF\u30B0(\u8907\u6570\u53EF)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 } }, mediaTags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: mediaTags, selected: form.tags.includes(t), onClick: () => toggleFormTag(t), small: true, faded: !form.tags.includes(t) }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginBottom: 12 } }, /* @__PURE__ */ React.createElement("input", { placeholder: "\u65B0\u3057\u3044\u30BF\u30B0\u3092\u8FFD\u52A0", value: newTagText, onChange: (e) => setNewTagText(e.target.value), style: { ...inputStyle, flex: 1, maxWidth: 200 } }), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: addNewTag }, "\u30BF\u30B0\u3092\u8FFD\u52A0")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: submit }, editingId ? "\u66F4\u65B0\u3059\u308B" : "\u8FFD\u52A0\u3059\u308B"), editingId && /* @__PURE__ */ React.createElement(Btn, { onClick: cancelEdit }, "\u30AD\u30E3\u30F3\u30BB\u30EB"))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "0.9rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { onClick: () => setTagManageOpen((v) => !v), style: { display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 15 } }, "\u30BF\u30B0\u3092\u7BA1\u7406"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, tagManageOpen ? "\u25B2 \u9589\u3058\u308B" : "\u25BC \u958B\u304F")), tagManageOpen && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8, marginTop: 12 } }, mediaTags.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted } }, "\u307E\u3060\u30BF\u30B0\u304C\u3042\u308A\u307E\u305B\u3093\u3002") : mediaTags.map((t) => {
+    var _a;
+    return /* @__PURE__ */ React.createElement("div", { key: t, style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: (_a = renameDrafts[t]) != null ? _a : t,
+        onChange: (e) => setRenameDrafts({ ...renameDrafts, [t]: e.target.value }),
+        style: { ...inputStyle, flex: 1, maxWidth: 220 }
+      }
+    ), /* @__PURE__ */ React.createElement(
+      Btn,
+      {
+        small: true,
+        onClick: () => {
+          var _a2;
+          const next = ((_a2 = renameDrafts[t]) != null ? _a2 : t).trim();
+          if (next && next !== t) onRenameTag(t, next);
+        }
+      },
+      "\u540D\u524D\u3092\u5909\u66F4"
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          if (window.confirm(`\u30BF\u30B0\u300C${t}\u300D\u3092\u524A\u9664\u3057\u307E\u3059\u304B?\u3053\u306E\u30BF\u30B0\u304C\u4ED8\u3044\u3066\u3044\u308B\u9805\u76EE\u304B\u3089\u3082\u5916\u308C\u307E\u3059\u3002`)) onDeleteTag(t);
+        },
+        style: { border: "none", background: "none", color: C.danger, cursor: "pointer", fontSize: 14 }
+      },
+      "\u524A\u9664"
+    ));
+  }))), /* @__PURE__ */ React.createElement("input", { placeholder: "\u30BF\u30A4\u30C8\u30EB\u30FB\u672C\u6587\u30FB\u30BF\u30B0\u3067\u691C\u7D22", value: q, onChange: (e) => setQ(e.target.value), style: { ...inputStyle, width: "100%" } }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, filteredItems.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, color: C.textMuted } }, "\u8A72\u5F53\u3059\u308B\u9805\u76EE\u304C\u3042\u308A\u307E\u305B\u3093\u3002") : filteredItems.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: item.id, style: { display: "flex", gap: 8, alignItems: "flex-start" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2, paddingTop: 4 } }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => onMove(item.id, -1),
@@ -1708,7 +1766,7 @@ function HealthInfoTab({ items, onAdd, onUpdate, onDelete, onMove }) {
       style: { border: "none", background: "none", cursor: i === filteredItems.length - 1 ? "default" : "pointer", opacity: i === filteredItems.length - 1 ? 0.3 : 1, fontSize: 14, color: C.textMuted }
     },
     "\u25BC"
-  )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement(HealthInfoCard, { item, onEdit: () => startEdit(item), onDelete: () => onDelete(item.id) }))))));
+  )), /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement(HealthInfoCard, { item, onEdit: () => startEdit(item), onDelete: () => onDelete(item.id), mediaTags }))))));
 }
 function fmtRange(range, unit) {
   if (!range) return "\u8A2D\u5B9A\u306A\u3057";
@@ -1762,6 +1820,7 @@ function App() {
   const [weights, setWeights] = useState({ prev: null, prev2: null });
   const [clip, setClip] = useState(null);
   const [healthInfo, setHealthInfo] = useState(null);
+  const [mediaTags, setMediaTags] = useState(null);
   const [md, setMd] = useState("");
   const [showMd, setShowMd] = useState(false);
   const [copyMsg, setCopyMsg] = useState("");
@@ -1819,6 +1878,12 @@ function App() {
         await saveJSON("healthInfo", hi);
       }
       setHealthInfo(hi);
+      let mt = await loadJSON("mediaTags", null);
+      if (!mt) {
+        mt = [];
+        await saveJSON("mediaTags", mt);
+      }
+      setMediaTags(mt);
     })();
   }, []);
   useEffect(() => {
@@ -1854,7 +1919,7 @@ function App() {
     });
     return slots;
   }, [day]);
-  if (!foods || !target || !categoryOrder || !healthInfo || !day || !withTotals) {
+  if (!foods || !target || !categoryOrder || !healthInfo || !mediaTags || !day || !withTotals) {
     return /* @__PURE__ */ React.createElement("div", { style: { padding: 30, color: C.textMuted, fontFamily: "'Zen Kaku Gothic New','Noto Sans JP',sans-serif" } }, "\u8AAD\u307F\u8FBC\u307F\u4E2D\u2026");
   }
   const unconfirmedTotal = day.slots.reduce((a, s) => a + s.items.filter((it) => !it.confirmed).length, 0);
@@ -1922,7 +1987,7 @@ function App() {
       }
     } catch (e) {
     }
-    return JSON.stringify({ foods, settings: target, categoryOrder, healthInfo, logs });
+    return JSON.stringify({ foods, settings: target, categoryOrder, healthInfo, mediaTags, logs });
   };
   const importAllData = async (jsonText) => {
     let data;
@@ -1946,6 +2011,10 @@ function App() {
     if (Array.isArray(data.healthInfo)) {
       setHealthInfo(data.healthInfo);
       await saveJSON("healthInfo", data.healthInfo);
+    }
+    if (Array.isArray(data.mediaTags)) {
+      setMediaTags(data.mediaTags);
+      await saveJSON("mediaTags", data.mediaTags);
     }
     let count = 0;
     if (data.logs && typeof data.logs === "object") {
@@ -1985,6 +2054,11 @@ function App() {
   };
   const addNewFoodToMaster = async (f) => {
     const updated = [...foods, f];
+    setFoods(updated);
+    await saveJSON("foods", updated);
+  };
+  const deleteFood = async (name) => {
+    const updated = foods.filter((f) => f.n !== name);
     setFoods(updated);
     await saveJSON("foods", updated);
   };
@@ -2085,6 +2159,28 @@ function App() {
     setHealthInfo(updated);
     await saveJSON("healthInfo", updated);
   };
+  const addMediaTag = async (name) => {
+    if (mediaTags.includes(name)) return;
+    const updated = [...mediaTags, name];
+    setMediaTags(updated);
+    await saveJSON("mediaTags", updated);
+  };
+  const renameMediaTag = async (oldName, newName) => {
+    const updatedTags = mediaTags.map((t) => t === oldName ? newName : t);
+    setMediaTags(updatedTags);
+    await saveJSON("mediaTags", updatedTags);
+    const updatedItems = healthInfo.map((h) => ({ ...h, tags: (h.tags || []).map((t) => t === oldName ? newName : t) }));
+    setHealthInfo(updatedItems);
+    await saveJSON("healthInfo", updatedItems);
+  };
+  const deleteMediaTag = async (name) => {
+    const updatedTags = mediaTags.filter((t) => t !== name);
+    setMediaTags(updatedTags);
+    await saveJSON("mediaTags", updatedTags);
+    const updatedItems = healthInfo.map((h) => ({ ...h, tags: (h.tags || []).filter((t) => t !== name) }));
+    setHealthInfo(updatedItems);
+    await saveJSON("healthInfo", updatedItems);
+  };
   const orderedSlots = [...withTotals].reverse();
   const orderedIndexOf = (id) => withTotals.findIndex((s) => s.id === id);
   return /* @__PURE__ */ React.createElement("div", { style: { fontFamily: "'Zen Kaku Gothic New','Noto Sans JP',sans-serif", color: C.text, background: C.bg, padding: 18, borderRadius: 14 } }, /* @__PURE__ */ React.createElement("style", null, `input, select, button, textarea { font-family: inherit; }
@@ -2135,6 +2231,7 @@ function App() {
       categoryOrder,
       onAdd: addNewFoodToMaster,
       onUpdate: updateFood,
+      onDelete: deleteFood,
       onImportMany: importFoodsBulk,
       onAddCategory: addCategory,
       editRequest: foodEditRequest
@@ -2153,7 +2250,20 @@ function App() {
         setTab("summary");
       }
     }
-  ), tab === "summary" && /* @__PURE__ */ React.createElement(SummaryTab, { target, todayIso: fmtISO(/* @__PURE__ */ new Date()), requestedPeriod: summaryRequest }), tab === "health" && /* @__PURE__ */ React.createElement(HealthInfoTab, { items: healthInfo, onAdd: addHealthInfo, onUpdate: updateHealthInfo, onDelete: deleteHealthInfo, onMove: moveHealthInfo }), tab === "import" && /* @__PURE__ */ React.createElement(ImportTab, { onImport: importData, onExportAll: exportAllData, onImportAll: importAllData }), tab === "log" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u65E5", onClick: () => setIso(addDays(iso, -1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(iso)), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u7FCC\u65E5", onClick: () => setIso(addDays(iso, 1)) }, "\u2192")), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 15, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: day.refeed, onChange: (e) => persistDay({ ...day, refeed: e.target.checked }) }), "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10 } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 15, color: C.textMuted } }, "\u4F53\u91CD"), /* @__PURE__ */ React.createElement(
+  ), tab === "summary" && /* @__PURE__ */ React.createElement(SummaryTab, { target, todayIso: fmtISO(/* @__PURE__ */ new Date()), requestedPeriod: summaryRequest }), tab === "health" && /* @__PURE__ */ React.createElement(
+    HealthInfoTab,
+    {
+      items: healthInfo,
+      onAdd: addHealthInfo,
+      onUpdate: updateHealthInfo,
+      onDelete: deleteHealthInfo,
+      onMove: moveHealthInfo,
+      mediaTags,
+      onAddTag: addMediaTag,
+      onRenameTag: renameMediaTag,
+      onDeleteTag: deleteMediaTag
+    }
+  ), tab === "import" && /* @__PURE__ */ React.createElement(ImportTab, { onImport: importData, onExportAll: exportAllData, onImportAll: importAllData }), tab === "log" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u65E5", onClick: () => setIso(addDays(iso, -1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(iso)), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u7FCC\u65E5", onClick: () => setIso(addDays(iso, 1)) }, "\u2192")), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 15, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: day.refeed, onChange: (e) => persistDay({ ...day, refeed: e.target.checked }) }), "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10 } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 15, color: C.textMuted } }, "\u4F53\u91CD"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "number",
