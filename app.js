@@ -592,7 +592,7 @@ function NutrientBars({ totals, target, slots }) {
       },
       perSlot.map((seg, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { width: `${seg.v * scale * 100 / tgt}%`, background: seg.color } })),
       minPct != null && /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", left: `${minPct}%`, top: 0, width: 1, height: "100%", background: C.text, opacity: 0.6 } })
-    ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: sum > tgt ? C.danger : C.textMuted, textAlign: "right" } }, "\u6B8B\u308A ", Math.round((tgt - sum) * 10) / 10));
+    ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 20, fontWeight: 700, color: sum > tgt ? C.danger : "#FFFFFF", textAlign: "right" } }, "\u6B8B\u308A ", Math.round((tgt - sum) * 10) / 10));
   })));
 }
 function FoodResultRow({ f, onPick }) {
@@ -1078,34 +1078,23 @@ function dayTotals(day) {
 }
 function MonthListModal({ monthStr, monthLogs, onClose, onSelectDate }) {
   const daysInMonth = new Date(parseInt(monthStr.slice(0, 4), 10), parseInt(monthStr.slice(5, 7), 10), 0).getDate();
+  const y = parseInt(monthStr.slice(0, 4), 10);
+  const m = parseInt(monthStr.slice(5, 7), 10);
+  const bandSet = /* @__PURE__ */ new Set(["A", "B", "C"]);
+  Object.values(monthLogs).forEach((log) => log.slots.forEach((s) => bandSet.add(s.id)));
+  const bandLetters = Array.from(bandSet).sort();
   const rows = Array.from({ length: daysInMonth }, (_, i) => {
     const d = String(i + 1).padStart(2, "0");
     const iso = `${monthStr}-${d}`;
     const log = monthLogs[iso];
-    const totals = log ? dayTotals(log) : null;
-    const hasUnconfirmed = !!log && log.slots.some((s) => s.items.some((it) => !it.confirmed));
-    return { iso, day: i + 1, log, totals, hasUnconfirmed };
+    const bandItems = {};
+    bandLetters.forEach((b) => {
+      const slot = log == null ? void 0 : log.slots.find((s) => s.id === b);
+      bandItems[b] = slot ? slot.items : [];
+    });
+    return { iso, day: i + 1, bandItems };
   });
-  return /* @__PURE__ */ React.createElement("div", { onClick: onClose, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 } }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), style: { background: C.surface, borderRadius: 14, padding: "1.2rem", width: "100%", maxWidth: 680, maxHeight: "85vh", overflowY: "auto" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, monthStr, "\u306E\u4E00\u89A7"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: onClose }, "\u9589\u3058\u308B")), /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 13, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted, borderBottom: `0.5px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px" } }, "\u65E5\u4ED8"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, "\u4F53\u91CD"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, "\u5869"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "center" } }, "\u30EA\u30D5\u30A3\u30FC\u30C9"), /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "center" } }, "\u672A\u78BA\u5B9A"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((r) => {
-    var _a, _b, _c;
-    return /* @__PURE__ */ React.createElement(
-      "tr",
-      {
-        key: r.iso,
-        onClick: () => onSelectDate(r.iso),
-        style: { borderBottom: `0.5px solid ${C.border}`, cursor: "pointer" }
-      },
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px" } }, r.day, "\u65E5"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, (_b = (_a = r.log) == null ? void 0 : _a.weight) != null ? _b : "-"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, r.totals ? Math.round(r.totals.kcal * 10) / 10 : "-"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, r.totals ? Math.round(r.totals.p * 10) / 10 : "-"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, r.totals ? Math.round(r.totals.f * 10) / 10 : "-"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, r.totals ? Math.round(r.totals.c * 10) / 10 : "-"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "right" } }, r.totals ? Math.round(r.totals.salt * 10) / 10 : "-"),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "center" } }, ((_c = r.log) == null ? void 0 : _c.refeed) ? "\u25CF" : ""),
-      /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", textAlign: "center", color: C.warnText } }, r.hasUnconfirmed ? "!" : "")
-    );
-  })))));
+  return /* @__PURE__ */ React.createElement("div", { onClick: onClose, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 } }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), style: { background: C.surface, borderRadius: 14, padding: "1.2rem", width: "100%", maxWidth: 900, maxHeight: "85vh", overflowY: "auto" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, y, "\u5E74", m, "\u6708\u306E\u4E00\u89A7"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: onClose }, "\u9589\u3058\u308B")), /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 13, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted, borderBottom: `0.5px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap" } }, "\u65E5\u4ED8"), bandLetters.map((b) => /* @__PURE__ */ React.createElement("td", { key: b, style: { padding: "4px 6px", minWidth: 160 } }, b, "\u5E2F")))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.iso, onClick: () => onSelectDate(r.iso), style: { borderBottom: `0.5px solid ${C.border}`, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", verticalAlign: "top" } }, r.day, "\u65E5"), bandLetters.map((b) => /* @__PURE__ */ React.createElement("td", { key: b, style: { padding: "4px 6px", verticalAlign: "top" } }, r.bandItems[b].length === 0 ? "" : r.bandItems[b].map((it) => /* @__PURE__ */ React.createElement("div", { key: it.id, style: { color: it.confirmed ? C.text : C.warnText } }, it.name)))))))))));
 }
 function CalendarTab({ target, todayIso, onOpenInHome, onViewSummary }) {
   const todayD = /* @__PURE__ */ new Date(todayIso + "T00:00:00");
