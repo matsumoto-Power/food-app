@@ -592,7 +592,7 @@ function NutrientBars({ totals, target, slots }) {
       },
       perSlot.map((seg, i) => /* @__PURE__ */ React.createElement("div", { key: i, style: { width: `${seg.v * scale * 100 / tgt}%`, background: seg.color } })),
       minPct != null && /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", left: `${minPct}%`, top: 0, width: 1, height: "100%", background: C.text, opacity: 0.6 } })
-    ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 20, fontWeight: 700, color: sum > tgt ? C.danger : "#FFFFFF", textAlign: "right" } }, "\u6B8B\u308A ", Math.round((tgt - sum) * 10) / 10));
+    ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 17, fontWeight: 500, color: sum > tgt ? C.danger : "#FFFFFF", textAlign: "right" } }, "\u6B8B\u308A ", Math.round((tgt - sum) * 10) / 10));
   })));
 }
 function FoodResultRow({ f, onPick }) {
@@ -1076,27 +1076,88 @@ function dayTotals(day) {
   );
   return t;
 }
-function MonthListModal({ monthStr, monthLogs, onClose, onSelectDate }) {
+function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, onSelectDate }) {
   const daysInMonth = new Date(parseInt(monthStr.slice(0, 4), 10), parseInt(monthStr.slice(5, 7), 10), 0).getDate();
   const y = parseInt(monthStr.slice(0, 4), 10);
   const m = parseInt(monthStr.slice(5, 7), 10);
   const bandSet = /* @__PURE__ */ new Set(["A", "B", "C"]);
   Object.values(monthLogs).forEach((log) => log.slots.forEach((s) => bandSet.add(s.id)));
   const bandLetters = Array.from(bandSet).sort();
+  const foodTags = (name) => {
+    const f = (foods || []).find((x) => x.n === name);
+    return f ? [f.mn, ...(f.sb || [])].filter(Boolean) : [];
+  };
   const rows = Array.from({ length: daysInMonth }, (_, i) => {
     const d = String(i + 1).padStart(2, "0");
     const iso = `${monthStr}-${d}`;
     const log = monthLogs[iso];
-    const bandItems = {};
+    const bandData = {};
+    let dayTotal = 0;
     bandLetters.forEach((b) => {
       const slot = log == null ? void 0 : log.slots.find((s) => s.id === b);
-      bandItems[b] = slot ? slot.items : [];
+      const items = slot ? slot.items : [];
+      const total = items.reduce((sum, it) => sum + (it.confirmed ? it.kcal : 0), 0);
+      dayTotal += total;
+      bandData[b] = { items, total };
     });
-    return { iso, day: i + 1, bandItems };
+    return { iso, day: i + 1, bandData, dayTotal };
   });
-  return /* @__PURE__ */ React.createElement("div", { onClick: onClose, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 } }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), style: { background: C.surface, borderRadius: 14, padding: "1.2rem", width: "100%", maxWidth: 900, maxHeight: "85vh", overflowY: "auto" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, y, "\u5E74", m, "\u6708\u306E\u4E00\u89A7"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: onClose }, "\u9589\u3058\u308B")), /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 13, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted, borderBottom: `0.5px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap" } }, "\u65E5\u4ED8"), bandLetters.map((b) => /* @__PURE__ */ React.createElement("td", { key: b, style: { padding: "4px 6px", minWidth: 160 } }, b, "\u5E2F")))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.iso, onClick: () => onSelectDate(r.iso), style: { borderBottom: `0.5px solid ${C.border}`, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", verticalAlign: "top" } }, r.day, "\u65E5"), bandLetters.map((b) => /* @__PURE__ */ React.createElement("td", { key: b, style: { padding: "4px 6px", verticalAlign: "top" } }, r.bandItems[b].length === 0 ? "" : r.bandItems[b].map((it) => /* @__PURE__ */ React.createElement("div", { key: it.id, style: { color: it.confirmed ? C.text : C.warnText } }, it.name)))))))))));
+  return /* @__PURE__ */ React.createElement("div", { onClick: onClose, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 } }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), style: { background: C.surface, borderRadius: 14, padding: "1.2rem", width: "100%", maxWidth: 1300, maxHeight: "85vh", overflowY: "auto" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, y, "\u5E74", m, "\u6708\u306E\u4E00\u89A7"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: onClose }, "\u9589\u3058\u308B")), /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement(
+    "table",
+    { style: { width: "100%", fontSize: 13, borderCollapse: "collapse" } },
+    /* @__PURE__ */ React.createElement(
+      "thead",
+      null,
+      /* @__PURE__ */ React.createElement(
+        "tr",
+        { style: { color: C.textMuted, borderBottom: `0.5px solid ${C.border}` } },
+        /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap" } }, "\u65E5\u4ED8"),
+        /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", textAlign: "right" } }, "\u7DCF\u30AB\u30ED\u30EA\u30FC"),
+        ...bandLetters.flatMap((b) => [
+          /* @__PURE__ */ React.createElement("td", { key: `${b}-name`, style: { padding: "4px 6px", minWidth: 150 } }, b, "\u5E2F\u98DF\u54C1\u540D"),
+          /* @__PURE__ */ React.createElement("td", { key: `${b}-tag`, style: { padding: "4px 6px", minWidth: 130 } }, b, "\u5E2F\u30BF\u30B0"),
+          /* @__PURE__ */ React.createElement("td", { key: `${b}-sum`, style: { padding: "4px 6px", textAlign: "right", whiteSpace: "nowrap" } }, b, "\u5E2F\u5408\u8A08")
+        ])
+      )
+    ),
+    /* @__PURE__ */ React.createElement(
+      "tbody",
+      null,
+      rows.map((r) => /* @__PURE__ */ React.createElement(
+        "tr",
+        { key: r.iso, onClick: () => onSelectDate(r.iso), style: { borderBottom: `0.5px solid ${C.border}`, cursor: "pointer" } },
+        /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", verticalAlign: "top" } }, r.day, "\u65E5"),
+        /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", textAlign: "right", verticalAlign: "top", fontWeight: 600 } }, r.dayTotal, "kcal"),
+        ...bandLetters.flatMap((b) => {
+          const { items, total } = r.bandData[b];
+          return [
+            /* @__PURE__ */ React.createElement(
+              "td",
+              { key: `${b}-name`, style: { padding: "4px 6px", verticalAlign: "top" } },
+              items.length === 0 ? "" : items.map((it) => /* @__PURE__ */ React.createElement(
+                "div",
+                { key: it.id, style: { color: it.confirmed ? C.text : C.warnText, whiteSpace: "nowrap" } },
+                it.name,
+                it.confirmed ? ` ${it.kcal}kcal` : " (\u672A\u78BA\u5B9A)"
+              ))
+            ),
+            /* @__PURE__ */ React.createElement(
+              "td",
+              { key: `${b}-tag`, style: { padding: "4px 6px", verticalAlign: "top" } },
+              items.length === 0 ? "" : items.map((it) => /* @__PURE__ */ React.createElement(
+                "div",
+                { key: it.id, style: { display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 2 } },
+                foodTags(it.name).map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, small: true }))
+              ))
+            ),
+            /* @__PURE__ */ React.createElement("td", { key: `${b}-sum`, style: { padding: "4px 6px", textAlign: "right", verticalAlign: "top", whiteSpace: "nowrap" } }, total, "kcal")
+          ];
+        })
+      ))
+    )
+  ))));
 }
-function CalendarTab({ target, todayIso, onOpenInHome, onViewSummary }) {
+function CalendarTab({ target, todayIso, foods, categoryOrder, onOpenInHome, onViewSummary }) {
   const todayD = /* @__PURE__ */ new Date(todayIso + "T00:00:00");
   const [viewYear, setViewYear] = useState(todayD.getFullYear());
   const [viewMonth, setViewMonth] = useState(todayD.getMonth());
@@ -1201,7 +1262,7 @@ function CalendarTab({ target, todayIso, onOpenInHome, onViewSummary }) {
       /* @__PURE__ */ React.createElement("span", null, d, hasUnconfirmed && "!"),
       /* @__PURE__ */ React.createElement("span", { style: { display: "flex", gap: 2, height: 6 } }, hasRecord && /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: over ? C.danger : C.success } }), (log == null ? void 0 : log.refeed) && /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "#F2A93C" } }))
     );
-  })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: C.textMuted, marginTop: 8 } }, "\u25CF\u7DD1=\u8A18\u9332\u3042\u308A(\u76EE\u6A19\u5185) \u25CF\u8D64=\u76EE\u6A19\u8D85\u904E \u25CF\u30AA\u30EC\u30F3\u30B8=\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4 \u300C!\u300D=\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u3042\u308A")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8 } }, /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => setListOpen(true) }, "\u6708\u5225\u4E00\u89A7\u8868"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onViewSummary(`${monthStr}-01`) }, "\u3053\u306E\u6708\u306E\u30B5\u30DE\u30EA\u30FC\u3092\u898B\u308B \u2192")), listOpen && /* @__PURE__ */ React.createElement(MonthListModal, { monthStr, monthLogs, onClose: () => setListOpen(false), onSelectDate: (iso) => {
+  })), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: C.textMuted, marginTop: 8 } }, "\u25CF\u7DD1=\u8A18\u9332\u3042\u308A(\u76EE\u6A19\u5185) \u25CF\u8D64=\u76EE\u6A19\u8D85\u904E \u25CF\u30AA\u30EC\u30F3\u30B8=\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4 \u300C!\u300D=\u672A\u78BA\u5B9A\u306E\u98DF\u54C1\u3042\u308A")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8 } }, /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => setListOpen(true) }, "\u6708\u5225\u98DF\u54C1\u4E00\u89A7"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onViewSummary(`${monthStr}-01`) }, "\u3053\u306E\u6708\u306E\u30B5\u30DE\u30EA\u30FC\u3092\u898B\u308B \u2192")), listOpen && /* @__PURE__ */ React.createElement(MonthListModal, { monthStr, monthLogs, foods, categoryOrder, onClose: () => setListOpen(false), onSelectDate: (iso) => {
     setSelectedIso(iso);
     setListOpen(false);
   } }), selectedDay && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(selectedIso)), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => onOpenInHome(selectedIso) }, "\u30DB\u30FC\u30E0\u3067\u7DE8\u96C6\u3059\u308B")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 16, fontSize: 15 } }, /* @__PURE__ */ React.createElement("span", null, "\u4F53\u91CD: ", /* @__PURE__ */ React.createElement("strong", null, selectedDay.weight != null ? `${selectedDay.weight}kg` : "\u672A\u8A18\u9332")), /* @__PURE__ */ React.createElement("span", { style: { color: selectedDay.refeed ? C.warnText : C.textMuted } }, "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4: ", selectedDay.refeed ? "\u306F\u3044" : "\u3044\u3044\u3048")), /* @__PURE__ */ React.createElement(NutrientBars, { target, slots: withTotals })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, withTotals.length === 0 || withTotals.every((s) => s.items.length === 0) ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 15, color: C.textMuted, textAlign: "center", padding: "1rem" } }, "\u3053\u306E\u65E5\u306E\u8A18\u9332\u306F\u3042\u308A\u307E\u305B\u3093") : withTotals.map((s, i) => /* @__PURE__ */ React.createElement("div", { key: s.id, style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 17, marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: colorForIndex(i) } }), s.id), s.items.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted } }, "(\u8A18\u9332\u306A\u3057)") : /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse" } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", null, "\u98DF\u54C1\u540D"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u5869"))), /* @__PURE__ */ React.createElement("tbody", null, s.items.map((it) => /* @__PURE__ */ React.createElement("tr", { key: it.id }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0" } }, it.name, !it.confirmed && /* @__PURE__ */ React.createElement("span", { style: { background: C.warnBg, color: C.warnText, fontSize: 12.5, padding: "1px 6px", borderRadius: 6, marginLeft: 6 } }, "\u672A\u78BA\u5B9A")), it.confirmed ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.kcal), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.p), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.f), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.c), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, it.salt)) : /* @__PURE__ */ React.createElement("td", { colSpan: 5, style: { textAlign: "right", color: C.textMuted } }, "\u6804\u990A\u7D20\u672A\u78BA\u5B9A"))))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "right", fontSize: 14.5, color: C.textMuted, marginTop: 6 } }, "\u5C0F\u8A08 ", s.totals.kcal, "kcal \u30FB P", Math.round(s.totals.p * 10) / 10, "g \u30FB \u8102", Math.round(s.totals.f * 10) / 10, "g \u30FB \u70AD", Math.round(s.totals.c * 10) / 10, "g \u30FB \u5869", Math.round(s.totals.salt * 10) / 10, "g")))), selectedDay.aiNote && /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, fontSize: 15, marginBottom: 8 } }, "AI\u89E3\u6790\u30E1\u30E2"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, whiteSpace: "pre-wrap" } }, selectedDay.aiNote)), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, fontSize: 15, marginBottom: 8 } }, "\u3053\u306E\u65E5\u306E\u30C8\u30EC\u30FC\u30CB\u30F3\u30B0\u5185\u5BB9"), /* @__PURE__ */ React.createElement(
@@ -2326,6 +2387,8 @@ function App() {
     {
       target,
       todayIso: fmtISO(/* @__PURE__ */ new Date()),
+      foods,
+      categoryOrder,
       onOpenInHome: (dateIso) => {
         setIso(dateIso);
         setTab("log");
