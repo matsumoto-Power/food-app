@@ -1126,7 +1126,7 @@ function dayTotals(day) {
   return t;
 }
 function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, onSelectDate, onChangeMonth }) {
-  const divider = `1px solid ${C.border}`;
+  const divider = "1px solid #75786A";
   const daysInMonth = new Date(parseInt(monthStr.slice(0, 4), 10), parseInt(monthStr.slice(5, 7), 10), 0).getDate();
   const y = parseInt(monthStr.slice(0, 4), 10);
   const m = parseInt(monthStr.slice(5, 7), 10);
