@@ -1126,7 +1126,7 @@ function dayTotals(day) {
   return t;
 }
 function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, onSelectDate, onChangeMonth }) {
-  const divider = `1px solid ${C.textMuted}`;
+  const divider = `1px solid ${C.border}`;
   const daysInMonth = new Date(parseInt(monthStr.slice(0, 4), 10), parseInt(monthStr.slice(5, 7), 10), 0).getDate();
   const y = parseInt(monthStr.slice(0, 4), 10);
   const m = parseInt(monthStr.slice(5, 7), 10);
@@ -1160,7 +1160,7 @@ function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, on
       null,
       /* @__PURE__ */ React.createElement(
         "tr",
-        { style: { color: C.textMuted, borderBottom: `0.5px solid ${C.border}` } },
+        { style: { color: C.textMuted, borderBottom: `1px solid ${C.textMuted}` } },
         /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap" } }, "\u65E5\u4ED8"),
         /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", textAlign: "right", borderLeft: divider } }, "\u7DCF\u30AB\u30ED\u30EA\u30FC"),
         ...bandLetters.flatMap((b) => [
@@ -1175,7 +1175,7 @@ function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, on
       null,
       rows.map((r) => /* @__PURE__ */ React.createElement(
         "tr",
-        { key: r.iso, onClick: () => onSelectDate(r.iso), style: { borderBottom: `0.5px solid ${C.border}`, cursor: "pointer" } },
+        { key: r.iso, onClick: () => onSelectDate(r.iso), style: { borderBottom: `1px solid ${C.textMuted}`, cursor: "pointer" } },
         /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", verticalAlign: "top" } }, r.day, "\u65E5"),
         /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", textAlign: "right", verticalAlign: "top", fontWeight: 600, borderLeft: divider } }, r.dayTotal, "kcal"),
         ...bandLetters.flatMap((b) => {
