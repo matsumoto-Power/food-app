@@ -1146,6 +1146,7 @@ function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, on
     const d = String(i + 1).padStart(2, "0");
     const iso = `${monthStr}-${d}`;
     const log = monthLogs[iso];
+    const noData = !log || !log.slots || log.slots.length === 0;
     const bandData = {};
     let dayTotal = 0;
     bandLetters.forEach((b) => {
@@ -1155,7 +1156,7 @@ function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, on
       dayTotal += total;
       bandData[b] = { items, total };
     });
-    return { iso, day: i + 1, bandData, dayTotal };
+    return { iso, day: i + 1, bandData, dayTotal, noData };
   });
   return /* @__PURE__ */ React.createElement("div", { onClick: onClose, style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 } }, /* @__PURE__ */ React.createElement("div", { onClick: (e) => e.stopPropagation(), style: { background: C.surface, borderRadius: 14, padding: "1.2rem", width: "100%", maxWidth: 1300, maxHeight: "85vh", overflowY: "auto" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u306E\u6708", onClick: () => onChangeMonth(-1) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, y, "\u5E74", m, "\u6708\u306E\u4E00\u89A7"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u6B21\u306E\u6708", onClick: () => onChangeMonth(1) }, "\u2192")), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: onClose }, "\u9589\u3058\u308B")), /* @__PURE__ */ React.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ React.createElement(
     "table",
@@ -1182,7 +1183,7 @@ function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, on
         "tr",
         { key: r.iso, onClick: () => onSelectDate(r.iso), style: { borderBottom: `1px solid ${C.textMuted}`, cursor: "pointer" } },
         /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", verticalAlign: "top" } }, r.day, "\u65E5"),
-        /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", textAlign: "right", verticalAlign: "top", fontWeight: 600, borderLeft: divider } }, r.dayTotal, "kcal"),
+        /* @__PURE__ */ React.createElement("td", { style: { padding: "4px 6px", whiteSpace: "nowrap", textAlign: "right", verticalAlign: "top", fontWeight: 600, borderLeft: divider, color: r.noData ? C.textMuted : void 0 } }, r.noData ? "\u5165\u529B\u7121\u3057" : `${r.dayTotal}kcal`),
         ...bandLetters.flatMap((b) => {
           const { items, total } = r.bandData[b];
           return [
@@ -1205,7 +1206,7 @@ function MonthListModal({ monthStr, monthLogs, foods, categoryOrder, onClose, on
                 foodTags(it.name).map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, small: true }))
               ))
             ),
-            /* @__PURE__ */ React.createElement("td", { key: `${b}-sum`, style: { padding: "4px 6px", textAlign: "right", verticalAlign: "top", whiteSpace: "nowrap" } }, total, "kcal")
+            /* @__PURE__ */ React.createElement("td", { key: `${b}-sum`, style: { padding: "4px 6px", textAlign: "right", verticalAlign: "top", whiteSpace: "nowrap", color: r.noData ? C.textMuted : void 0 } }, r.noData ? "\u5165\u529B\u7121\u3057" : `${total}kcal`)
           ];
         })
       ))
