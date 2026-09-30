@@ -1,26 +1,56 @@
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
 if (typeof window !== "undefined" && !window.storage) {
   const PREFIX = "shokuji-app:";
+  const META_KEY = "shokuji-app:__meta";
+  const loadMeta = () => {
+    try {
+      return JSON.parse(localStorage.getItem(META_KEY) || "{}");
+    } catch (e) {
+      return {};
+    }
+  };
+  const saveMeta = (meta) => {
+    localStorage.setItem(META_KEY, JSON.stringify(meta));
+  };
+  const touchMeta = (key, ts) => {
+    const meta = loadMeta();
+    meta[key] = ts != null ? ts : Date.now();
+    saveMeta(meta);
+    return meta[key];
+  };
+  window.storageMeta = {
+    get(key) {
+      return loadMeta()[key] || 0;
+    },
+    set(key, ts) {
+      return touchMeta(key, ts);
+    },
+    all() {
+      return loadMeta();
+    }
+  };
   window.storage = {
     async get(key) {
       const raw = localStorage.getItem(PREFIX + key);
       if (raw == null) throw new Error("not found");
       return { key, value: raw, shared: false };
     },
-    async set(key, value) {
+    async set(key, value, ts) {
       localStorage.setItem(PREFIX + key, value);
+      touchMeta(key, typeof ts === "number" ? ts : void 0);
       return { key, value, shared: false };
     },
     async delete(key) {
       const existed = localStorage.getItem(PREFIX + key) != null;
       localStorage.removeItem(PREFIX + key);
+      touchMeta(key);
       return { key, deleted: existed, shared: false };
     },
     async list(prefix) {
       const keys = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && k.startsWith(PREFIX)) {
+        if (k && k.startsWith(PREFIX) && k !== META_KEY) {
           const bare = k.slice(PREFIX.length);
           if (!prefix || bare.startsWith(prefix)) keys.push(bare);
         }
@@ -488,9 +518,213 @@ async function loadJSON(key, fallback) {
 async function saveJSON(key, value) {
   try {
     await window.storage.set(key, JSON.stringify(value), false);
+    scheduleAutoSyncIfEnabled();
   } catch (e) {
   }
 }
+
+const DRIVE_CLIENT_ID = "970043552215-d12tdiia2u5fmr8acmbrklharpe790dr.apps.googleusercontent.com";
+const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.appdata";
+const DRIVE_SYNC_FILENAME = "shokuji-app-sync.json";
+const DRIVE_CONNECTED_KEY = "shokuji-app-drive-connected";
+const DRIVE_AUTOSYNC_KEY = "shokuji-app-drive-autosync";
+const DRIVE_LAST_SYNC_KEY = "shokuji-app-drive-last-sync";
+
+let driveTokenClient = null;
+let driveAccessToken = null;
+let driveAccessTokenExpiry = 0;
+let autoSyncTimer = null;
+let autoSyncRunner = null;
+
+function scheduleAutoSyncIfEnabled() {
+  try {
+    if (localStorage.getItem(DRIVE_CONNECTED_KEY) !== "1") return;
+    if (localStorage.getItem(DRIVE_AUTOSYNC_KEY) !== "1") return;
+    if (!autoSyncRunner) return;
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(() => {
+      autoSyncRunner();
+    }, 2500);
+  } catch (e) {
+  }
+}
+
+function loadGisScript() {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+      resolve();
+      return;
+    }
+    const existing = document.getElementById("gis-script");
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("Google\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8AAD\u307F\u8FBC\u307F\u306B\u5931\u6557\u3057\u307E\u3057\u305F")));
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = "gis-script";
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Google\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8AAD\u307F\u8FBC\u307F\u306B\u5931\u6557\u3057\u307E\u3057\u305F"));
+    document.head.appendChild(s);
+  });
+}
+
+function ensureDriveTokenClient(onToken) {
+  if (!driveTokenClient) {
+    driveTokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: (resp) => {
+        if (resp && resp.access_token) {
+          driveAccessToken = resp.access_token;
+          driveAccessTokenExpiry = Date.now() + (resp.expires_in || 3600) * 1000 - 6e4;
+        }
+        onToken(resp);
+      }
+    });
+  }
+  return driveTokenClient;
+}
+
+async function getDriveToken(interactive) {
+  await loadGisScript();
+  if (driveAccessToken && Date.now() < driveAccessTokenExpiry) return driveAccessToken;
+  return new Promise((resolve, reject) => {
+    const client = ensureDriveTokenClient((resp) => {
+      if (resp && resp.access_token) resolve(resp.access_token);
+      else reject(new Error((resp && resp.error) || "\u8A8D\u8A3C\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u518D\u5EA6\u300C\u4ECA\u3059\u3050\u540C\u671F\u300D\u3092\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002"));
+    });
+    client.requestAccessToken({ prompt: interactive ? "consent" : "" });
+  });
+}
+
+async function driveApi(path, options) {
+  const token = await getDriveToken(false);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/${path}`, {
+    ...options,
+    headers: { ...((options && options.headers) || {}), Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Drive API error ${res.status}: ${text.slice(0, 200)}`);
+  }
+  return res;
+}
+
+async function findSyncFileId() {
+  const res = await driveApi(`files?spaces=appDataFolder&q=${encodeURIComponent(`name='${DRIVE_SYNC_FILENAME}'`)}&fields=files(id,name)`);
+  const data = await res.json();
+  return data.files && data.files[0] ? data.files[0].id : null;
+}
+
+async function createSyncFile(content) {
+  const token = await getDriveToken(false);
+  const boundary = "shokuji-app-boundary";
+  const metadata = { name: DRIVE_SYNC_FILENAME, parents: ["appDataFolder"] };
+  const body = `--${boundary}\r
+Content-Type: application/json; charset=UTF-8\r
+\r
+${JSON.stringify(metadata)}\r
+--${boundary}\r
+Content-Type: application/json; charset=UTF-8\r
+\r
+${JSON.stringify(content)}\r
+--${boundary}--`;
+  const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}` },
+    body
+  });
+  if (!res.ok) throw new Error(`Drive create error ${res.status}`);
+  const data = await res.json();
+  return data.id;
+}
+
+async function downloadSyncFile(fileId) {
+  const res = await driveApi(`files/${fileId}?alt=media`);
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return {};
+  }
+}
+
+async function uploadSyncFile(fileId, content) {
+  const token = await getDriveToken(false);
+  const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(content)
+  });
+  if (!res.ok) throw new Error(`Drive upload error ${res.status}`);
+}
+
+function readAllLocalForSync() {
+  const out = {};
+  const meta = window.storageMeta.all();
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k || !k.startsWith("shokuji-app:") || k === "shokuji-app:__meta") continue;
+    const bare = k.slice("shokuji-app:".length);
+    out[bare] = { value: localStorage.getItem(k), updatedAt: meta[bare] || 0 };
+  }
+  return out;
+}
+
+function labelForSyncKey(key) {
+  const m = key.match(/^log:(\d{4}-\d{2}-\d{2})$/);
+  if (m) return m[1];
+  const labels = {
+    foods: "\u98DF\u54C1DB",
+    target: "\u76EE\u6A19\u6444\u53D6\u91CF",
+    categoryOrder: "\u5206\u985E\u306E\u4E26\u3073\u9806",
+    healthInfo: "\u30E1\u30C7\u30A3\u30A2",
+    mediaTags: "\u30E1\u30C7\u30A3\u30A2\u30BF\u30B0"
+  };
+  return labels[key] || key;
+}
+
+async function syncWithDrive() {
+  const existingFileId = await findSyncFileId();
+  const fileId = existingFileId || await createSyncFile({});
+  const remote = existingFileId ? await downloadSyncFile(fileId) : {};
+  const local = readAllLocalForSync();
+  const merged = { ...remote };
+  const conflictKeys = [];
+  for (const key of Object.keys(local)) {
+    const l = local[key];
+    const r = remote[key];
+    if (!r) {
+      merged[key] = l;
+      continue;
+    }
+    if (r.value === l.value) {
+      merged[key] = l.updatedAt >= r.updatedAt ? l : r;
+      continue;
+    }
+    merged[key] = l.updatedAt >= r.updatedAt ? l : r;
+    conflictKeys.push(key);
+  }
+  let changedLocally = false;
+  for (const key of Object.keys(merged)) {
+    const m = merged[key];
+    const existingRaw = localStorage.getItem("shokuji-app:" + key);
+    const existingTs = window.storageMeta.get(key);
+    if (existingRaw !== m.value || existingTs !== m.updatedAt) {
+      localStorage.setItem("shokuji-app:" + key, m.value);
+      window.storageMeta.set(key, m.updatedAt);
+      changedLocally = true;
+    }
+  }
+  await uploadSyncFile(fileId, merged);
+  return { conflictKeys: conflictKeys.map(labelForSyncKey), changedLocally };
+}
+
 const emptyDay = () => ({ weight: null, refeed: false, aiNote: "", training: "", slots: [{ id: "A", items: [] }] });
 const nextSlotId = (slots) => {
   if (slots.length === 0) return "A";
@@ -1030,7 +1264,7 @@ function SettingsTab({ target, onSave, categoryOrder, foods, onSaveCategoryOrder
     )));
   })), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: () => onSave(form) }, "\u4FDD\u5B58\u3059\u308B"))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1.2rem", maxWidth: 420 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 4 } }, "\u5206\u985E\u306E\u4E26\u3073\u9806"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.textMuted, marginBottom: 10 } }, "\u77E2\u5370\u3067\u5165\u308C\u66FF\u3048\u3066\u3001\u4FDD\u5B58\u3059\u308B\u3092\u62BC\u3057\u3066\u304F\u3060\u3055\u3044\u3002"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, fullOrder.map((t, i) => /* @__PURE__ */ React.createElement("div", { key: t, style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, /* @__PURE__ */ React.createElement("button", { onClick: () => move(i, -1), disabled: i === 0, style: { border: "none", background: "none", cursor: i === 0 ? "default" : "pointer", opacity: i === 0 ? 0.3 : 1, fontSize: 14, color: C.text } }, "\u25B2"), /* @__PURE__ */ React.createElement("button", { onClick: () => move(i, 1), disabled: i === fullOrder.length - 1, style: { border: "none", background: "none", cursor: i === fullOrder.length - 1 ? "default" : "pointer", opacity: i === fullOrder.length - 1 ? 0.3 : 1, fontSize: 14, color: C.text } }, "\u25BC")), /* @__PURE__ */ React.createElement(TagPill, { tag: t, order: fullOrder })))), /* @__PURE__ */ React.createElement("div", { style: { marginTop: 14 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: () => onSaveCategoryOrder(order) }, "\u4FDD\u5B58\u3059\u308B"))));
 }
-function ImportTab({ onImport, onExportAll, onImportAll, onCopied }) {
+function ImportTab({ onImport, onExportAll, onImportAll, onCopied, driveConnected, driveAutoSync, driveSyncing, driveError, driveLastSync, onConnectDrive, onDisconnectDrive, onSyncNowDrive, onToggleAutoSync }) {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -1081,7 +1315,10 @@ function ImportTab({ onImport, onExportAll, onImportAll, onCopied }) {
     setBusy(false);
     setResult(r);
   };
-  return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, maxWidth: 640 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 8 } }, "\u5168\u30C7\u30FC\u30BF\u306E\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u30FB\u5225\u306E\u30C1\u30E3\u30C3\u30C8\u3078\u306E\u5F15\u304D\u7D99\u304E"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 10 } }, "\u3053\u306E\u30A2\u30D7\u30EA\u306E\u4FDD\u5B58\u30C7\u30FC\u30BF(\u98DF\u54C1DB\u30FB\u65E5\u3005\u306E\u8A18\u9332\u30FB\u8A2D\u5B9A\u30FB\u5065\u5EB7\u60C5\u5831\u306A\u3069\u5168\u3066)\u30921\u3064\u306E\u30C7\u30FC\u30BF\u3068\u3057\u3066\u66F8\u304D\u51FA\u305B\u307E\u3059\u3002\u5225\u306E\u30C1\u30E3\u30C3\u30C8\u306B\u3053\u306E\u98DF\u4E8B\u7BA1\u7406\u30A2\u30D7\u30EA\u306E\u30D5\u30A1\u30A4\u30EB\u3092\u958B\u3044\u305F\u969B\u3001\u4E0B\u306E\u300C\u8AAD\u307F\u8FBC\u3080\u300D\u6B04\u306B\u3053\u3053\u3067\u30B3\u30D4\u30FC\u3057\u305F\u5185\u5BB9\u3092\u8CBC\u308A\u4ED8\u3051\u308C\u3070\u3001\u540C\u3058\u5185\u5BB9\u3092\u5F15\u304D\u7D99\u3052\u307E\u3059\u3002"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", marginBottom: 8 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: doExport }, backupBusy ? "\u66F8\u304D\u51FA\u3057\u4E2D\u2026" : "\u5168\u30C7\u30FC\u30BF\u3092\u66F8\u304D\u51FA\u3059"), backupText && /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: doCopyBackup }, "\u30B3\u30D4\u30FC")), backupText && /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, maxWidth: 640 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600 } }, "Google\u30C9\u30E9\u30A4\u30D6\u3067\u7AEF\u672B\u9593\u540C\u671F"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13.5, color: C.textMuted, lineHeight: 1.6 } }, "\u3042\u306A\u305F\u81EA\u8EAB\u306EGoogle\u30C9\u30E9\u30A4\u30D6\u306B\u8A18\u9332\u3092\u4FDD\u5B58\u3057\u3001\u4ED6\u306E\u7AEF\u672B(PC\u30FB\u30BF\u30D6\u30EC\u30C3\u30C8\u306A\u3069)\u3068\u81EA\u52D5\u3067\u540C\u671F\u3057\u307E\u3059\u3002\u65E5\u4ED8\u3054\u3068\u306E\u8A18\u9332\u306F\u3001\u5225\u306E\u7AEF\u672B\u3067\u5225\u306E\u65E5\u3092\u7DE8\u96C6\u3057\u3066\u3044\u308C\u3070\u3069\u3061\u3089\u3082\u53CD\u6620\u3055\u308C\u3001\u540C\u3058\u65E5\u3092\u7DE8\u96C6\u3057\u3066\u3044\u305F\u5834\u5408\u3060\u3051\u65B0\u3057\u3044\u65B9\u304C\u81EA\u52D5\u63A1\u7528\u3055\u308C\u307E\u3059(\u305D\u306E\u5834\u5408\u306F\u30DD\u30C3\u30D7\u30A2\u30C3\u30D7\u3067\u304A\u77E5\u3089\u305B\u3057\u307E\u3059)\u3002"), driveError && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13.5, color: C.danger, display: "flex", alignItems: "center", gap: 6 } }, "\u25CF \u540C\u671F\u30A8\u30E9\u30FC: ", driveError), driveConnected && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.textMuted } }, "\u6700\u7D42\u540C\u671F: ", driveLastSync ? (() => {
+    const d = /* @__PURE__ */ new Date(driveLastSync);
+    return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  })() : "\u307E\u3060\u540C\u671F\u3057\u3066\u3044\u307E\u305B\u3093"), driveConnected && /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 14, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: driveAutoSync, onChange: (e) => onToggleAutoSync(e.target.checked) }), "\u4FDD\u5B58\u306E\u305F\u3073\u306B\u81EA\u52D5\u3067\u540C\u671F\u3059\u308B(\u30AA\u30D5\u3067\u3082\u300C\u4ECA\u3059\u3050\u540C\u671F\u300D\u306F\u4F7F\u3048\u307E\u3059)"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, !driveConnected && /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: onConnectDrive }, "Google\u30C9\u30E9\u30A4\u30D6\u3068\u9023\u643A\u3059\u308B"), driveConnected && /* @__PURE__ */ React.createElement(Btn, { onClick: driveSyncing ? void 0 : onSyncNowDrive }, driveSyncing ? "\u540C\u671F\u4E2D\u2026" : "\u4ECA\u3059\u3050\u540C\u671F"), driveConnected && /* @__PURE__ */ React.createElement(Btn, { onClick: onDisconnectDrive }, "\u9023\u643A\u3092\u89E3\u9664"))), /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600, marginBottom: 8 } }, "\u5168\u30C7\u30FC\u30BF\u306E\u30D0\u30C3\u30AF\u30A2\u30C3\u30D7\u30FB\u5225\u306E\u30C1\u30E3\u30C3\u30C8\u3078\u306E\u5F15\u304D\u7D99\u304E"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14.5, color: C.textMuted, lineHeight: 1.6, marginBottom: 10 } }, "\u3053\u306E\u30A2\u30D7\u30EA\u306E\u4FDD\u5B58\u30C7\u30FC\u30BF(\u98DF\u54C1DB\u30FB\u65E5\u3005\u306E\u8A18\u9332\u30FB\u8A2D\u5B9A\u30FB\u5065\u5EB7\u60C5\u5831\u306A\u3069\u5168\u3066)\u30921\u3064\u306E\u30C7\u30FC\u30BF\u3068\u3057\u3066\u66F8\u304D\u51FA\u305B\u307E\u3059\u3002\u5225\u306E\u30C1\u30E3\u30C3\u30C8\u306B\u3053\u306E\u98DF\u4E8B\u7BA1\u7406\u30A2\u30D7\u30EA\u306E\u30D5\u30A1\u30A4\u30EB\u3092\u958B\u3044\u305F\u969B\u3001\u4E0B\u306E\u300C\u8AAD\u307F\u8FBC\u3080\u300D\u6B04\u306B\u3053\u3053\u3067\u30B3\u30D4\u30FC\u3057\u305F\u5185\u5BB9\u3092\u8CBC\u308A\u4ED8\u3051\u308C\u3070\u3001\u540C\u3058\u5185\u5BB9\u3092\u5F15\u304D\u7D99\u3052\u307E\u3059\u3002"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center", marginBottom: 8 } }, /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: doExport }, backupBusy ? "\u66F8\u304D\u51FA\u3057\u4E2D\u2026" : "\u5168\u30C7\u30FC\u30BF\u3092\u66F8\u304D\u51FA\u3059"), backupText && /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: doCopyBackup }, "\u30B3\u30D4\u30FC")), backupText && /* @__PURE__ */ React.createElement(
     "textarea",
     {
       readOnly: true,
@@ -2028,6 +2265,77 @@ function App() {
     setToast(msg);
     setTimeout(() => setToast(""), 1600);
   };
+  const [driveConnected, setDriveConnected] = useState(() => localStorage.getItem(DRIVE_CONNECTED_KEY) === "1");
+  const [driveAutoSync, setDriveAutoSync] = useState(() => localStorage.getItem(DRIVE_AUTOSYNC_KEY) === "1");
+  const [driveSyncing, setDriveSyncing] = useState(false);
+  const [driveError, setDriveError] = useState("");
+  const [driveLastSync, setDriveLastSync] = useState(() => {
+    const v = localStorage.getItem(DRIVE_LAST_SYNC_KEY);
+    return v ? parseInt(v, 10) : null;
+  });
+  const runDriveSync = useCallback(async () => {
+    setDriveSyncing(true);
+    setDriveError("");
+    try {
+      const { conflictKeys, changedLocally } = await syncWithDrive();
+      const now = Date.now();
+      localStorage.setItem(DRIVE_LAST_SYNC_KEY, String(now));
+      setDriveLastSync(now);
+      if (conflictKeys.length > 0) {
+        window.alert(
+          `\u4ED6\u306E\u7AEF\u672B\u3068\u98DF\u3044\u9055\u3046\u8A18\u9332\u304C\u3042\u3063\u305F\u305F\u3081\u3001\u65B0\u3057\u3044\u65B9\u3092\u81EA\u52D5\u63A1\u7528\u3057\u307E\u3057\u305F(${conflictKeys.length}\u4EF6)
+
+\u3010\u65B0\u3057\u3044\u65B9\u3092\u81EA\u52D5\u63A1\u7528\u3057\u305F\u9805\u76EE\u3011
+${conflictKeys.join("\n")}`
+        );
+      }
+      if (changedLocally) {
+        location.reload();
+      }
+    } catch (e) {
+      setDriveError((e && e.message) || String(e));
+    } finally {
+      setDriveSyncing(false);
+    }
+  }, []);
+  useEffect(() => {
+    autoSyncRunner = runDriveSync;
+    return () => {
+      autoSyncRunner = null;
+    };
+  }, [runDriveSync]);
+  useEffect(() => {
+    if (driveConnected) {
+      runDriveSync();
+    }
+  }, []);
+  const connectDrive = async () => {
+    setDriveError("");
+    try {
+      await getDriveToken(true);
+      localStorage.setItem(DRIVE_CONNECTED_KEY, "1");
+      setDriveConnected(true);
+      await runDriveSync();
+    } catch (e) {
+      setDriveError((e && e.message) || String(e));
+    }
+  };
+  const disconnectDrive = () => {
+    try {
+      if (driveAccessToken && window.google) window.google.accounts.oauth2.revoke(driveAccessToken, () => {
+      });
+    } catch (e) {
+    }
+    driveAccessToken = null;
+    driveTokenClient = null;
+    localStorage.removeItem(DRIVE_CONNECTED_KEY);
+    setDriveConnected(false);
+    setDriveError("");
+  };
+  const toggleDriveAutoSync = (checked) => {
+    localStorage.setItem(DRIVE_AUTOSYNC_KEY, checked ? "1" : "0");
+    setDriveAutoSync(checked);
+  };
   const [noteOpen, setNoteOpen] = useState(false);
   const [summaryRequest, setSummaryRequest] = useState(null);
   const [foodEditRequest, setFoodEditRequest] = useState(null);
@@ -2509,7 +2817,7 @@ function App() {
       onDeleteTag: deleteMediaTag,
       onMoveTag: moveMediaTag
     }
-  ), tab === "import" && /* @__PURE__ */ React.createElement(ImportTab, { onImport: importData, onExportAll: exportAllData, onImportAll: importAllData, onCopied: showToast }), tab === "log" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u65E5", onClick: () => setIso(addDays(iso, -1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(iso)), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u7FCC\u65E5", onClick: () => setIso(addDays(iso, 1)) }, "\u2192"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => setIso(fmtISO(/* @__PURE__ */ new Date())) }, "\u672C\u65E5")), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 15, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: day.refeed, onChange: (e) => persistDay({ ...day, refeed: e.target.checked }) }), "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4"), refeedPace && /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, color: C.textMuted } }, "(\u524D\u56DE ", `${new Date(refeedPace.date + "T00:00:00").getMonth() + 1}/${new Date(refeedPace.date + "T00:00:00").getDate()}`, " \u304B\u3089", refeedPace.days, "\u65E5)")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10 } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 15, color: C.textMuted } }, "\u4F53\u91CD"), /* @__PURE__ */ React.createElement(
+  ), tab === "import" && /* @__PURE__ */ React.createElement(ImportTab, { onImport: importData, onExportAll: exportAllData, onImportAll: importAllData, onCopied: showToast, driveConnected, driveAutoSync, driveSyncing, driveError, driveLastSync, onConnectDrive: connectDrive, onDisconnectDrive: disconnectDrive, onSyncNowDrive: runDriveSync, onToggleAutoSync: toggleDriveAutoSync }), tab === "log" && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 16 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u524D\u65E5", onClick: () => setIso(addDays(iso, -1)) }, "\u2190"), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17 } }, fmtJP(iso)), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u7FCC\u65E5", onClick: () => setIso(addDays(iso, 1)) }, "\u2192"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => setIso(fmtISO(/* @__PURE__ */ new Date())) }, "\u672C\u65E5")), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 15, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: day.refeed, onChange: (e) => persistDay({ ...day, refeed: e.target.checked }) }), "\u30EA\u30D5\u30A3\u30FC\u30C9\u30C7\u30A4"), refeedPace && /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, color: C.textMuted } }, "(\u524D\u56DE ", `${new Date(refeedPace.date + "T00:00:00").getMonth() + 1}/${new Date(refeedPace.date + "T00:00:00").getDate()}`, " \u304B\u3089", refeedPace.days, "\u65E5)")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10 } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: 15, color: C.textMuted } }, "\u4F53\u91CD"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "number",
