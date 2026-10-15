@@ -738,6 +738,10 @@ const dayAddFood = (day, slotId, f) => {
   const item = { id: newItemId(), name: f.n, kcal: f.k, p: f.p, f: f.f, c: f.c, salt: f.s, confirmed: true };
   return { ...day, slots: day.slots.map((s) => s.id === slotId ? { ...s, items: [...s.items, item] } : s) };
 };
+const dayAddManual = (day, slotId, m) => {
+  const item = { id: newItemId(), name: m.name, kcal: m.kcal, p: m.p, f: m.f, c: m.c, salt: m.salt, confirmed: true, manual: true };
+  return { ...day, slots: day.slots.map((s) => s.id === slotId ? { ...s, items: [...s.items, item] } : s) };
+};
 const dayAddUnconfirmed = (day, slotId, name) => {
   const item = { id: newItemId(), name, kcal: 0, p: 0, f: 0, c: 0, salt: 0, confirmed: false };
   return { ...day, slots: day.slots.map((s) => s.id === slotId ? { ...s, items: [...s.items, item] } : s) };
@@ -881,7 +885,39 @@ function FoodResultRow({ f, onPick, active }) {
     /* @__PURE__ */ React.createElement("span", { style: { color: C.textMuted, whiteSpace: "nowrap" } }, f.k, "kcal")
   );
 }
-function FoodAdder({ foods, categoryOrder, onAddFood, onAddUnconfirmed }) {
+function ManualEntry({ onAddManual }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [calc, setCalc] = useState(true);
+  const [grams, setGrams] = useState("100");
+  const [v, setV] = useState({ kcal: "", p: "", f: "", c: "", salt: "" });
+  const num = (x) => {
+    const n = parseFloat(x);
+    return isNaN(n) ? 0 : n;
+  };
+  const g = num(grams);
+  const ratio = calc ? g / 100 : 1;
+  const r1 = (x) => Math.round(x * ratio * 10) / 10;
+  const result = { kcal: r1(num(v.kcal)), p: r1(num(v.p)), f: r1(num(v.f)), c: r1(num(v.c)), salt: r1(num(v.salt)) };
+  const canAdd = name.trim() !== "" && (!calc || g > 0);
+  const reset = () => {
+    setName("");
+    setGrams("100");
+    setV({ kcal: "", p: "", f: "", c: "", salt: "" });
+  };
+  const inputStyle = { width: "100%", fontSize: 15, padding: "6px 8px", border: `0.5px solid ${C.border}`, borderRadius: 8 };
+  const field = (label, key) => /* @__PURE__ */ React.createElement("label", { key, style: { display: "flex", flexDirection: "column", gap: 2, fontSize: 12.5, color: C.textMuted, minWidth: 0 } }, label, /* @__PURE__ */ React.createElement("input", { type: "number", inputMode: "decimal", value: v[key], onChange: (e) => setV({ ...v, [key]: e.target.value }), style: inputStyle }));
+  if (!open) {
+    return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => setOpen(true) }, "+ \u76F4\u63A5\u5165\u529B(DB\u306B\u767B\u9332\u3057\u306A\u3044)"));
+  }
+  return /* @__PURE__ */ React.createElement("div", { style: { border: `0.5px solid ${C.border}`, borderRadius: 8, padding: "0.7rem 0.8rem", display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, fontWeight: 600 } }, "\u76F4\u63A5\u5165\u529B(DB\u306B\u767B\u9332\u3057\u306A\u3044)"), /* @__PURE__ */ React.createElement(Btn, { small: true, onClick: () => setOpen(false) }, "\u9589\u3058\u308B")), /* @__PURE__ */ React.createElement("input", { value: name, onChange: (e) => setName(e.target.value), placeholder: "\u98DF\u54C1\u540D", style: inputStyle }), /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, color: C.textMuted, cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: calc, onChange: (e) => setCalc(e.target.checked) }), "100g\u3042\u305F\u308A\u306E\u5024\u304B\u3089\u3001\u98DF\u3079\u305F\u91CF\u306B\u5408\u308F\u305B\u3066\u8A08\u7B97\u3059\u308B(\u30AA\u30D5=\u5165\u529B\u5024\u3092\u305D\u306E\u307E\u307E\u8A18\u9332)"), calc && /* @__PURE__ */ React.createElement("label", { style: { display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.textMuted } }, "\u98DF\u3079\u305F\u91CF", /* @__PURE__ */ React.createElement("input", { type: "number", inputMode: "decimal", value: grams, onChange: (e) => setGrams(e.target.value), style: { ...inputStyle, width: 90 } }), "g"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12.5, color: C.textMuted } }, calc ? "100g\u3042\u305F\u308A\u306E\u5024\u3092\u5165\u529B" : "\u3053\u306E\u91CF\u306E\u5408\u8A08\u5024\u3092\u5165\u529B"), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 6 } }, field("kcal", "kcal"), field("P(g)", "p"), field("\u8102(g)", "f"), field("\u70AD(g)", "c"), field("\u5869(g)", "salt")), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14, color: C.text } }, calc ? `${g || 0}g\u5206: ` : "\u8A18\u9332\u3055\u308C\u308B\u5024: ", result.kcal, "kcal \u30FB P", result.p, "g \u30FB \u8102", result.f, "g \u30FB \u70AD", result.c, "g \u30FB \u5869", result.salt, "g"), /* @__PURE__ */ React.createElement(Btn, { primary: true, onClick: () => {
+    if (!canAdd) return;
+    onAddManual({ name: calc ? `${name.trim()} ${g}g` : name.trim(), ...result });
+    reset();
+    setOpen(false);
+  } }, "\u67A0\u306B\u8FFD\u52A0"));
+}
+function FoodAdder({ foods, categoryOrder, onAddFood, onAddUnconfirmed, onAddManual }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [browseTag, setBrowseTag] = useState("");
@@ -968,7 +1004,7 @@ function FoodAdder({ foods, categoryOrder, onAddFood, onAddUnconfirmed }) {
       }
     },
     results.map((f, i) => /* @__PURE__ */ React.createElement(FoodResultRow, { key: f.n, f, onPick: pick, active: i === activeIndex }))
-  )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, "\u5206\u985E\u304B\u3089\u63A2\u3059:"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } }, allTags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: browseTag === t, onClick: () => setBrowseTag(browseTag === t ? "" : t), small: true }))), browseTag && /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(ManualEntry, { onAddManual }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14, color: C.textMuted } }, "\u5206\u985E\u304B\u3089\u63A2\u3059:"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 6 } }, allTags.map((t) => /* @__PURE__ */ React.createElement(TagPill, { key: t, tag: t, order: categoryOrder, selected: browseTag === t, onClick: () => setBrowseTag(browseTag === t ? "" : t), small: true }))), browseTag && /* @__PURE__ */ React.createElement(
     "div",
     {
       style: {
@@ -982,7 +1018,7 @@ function FoodAdder({ foods, categoryOrder, onAddFood, onAddUnconfirmed }) {
     browseResults.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { padding: 10, fontSize: 14.5, color: C.textMuted } }, "\u8A72\u5F53\u3059\u308B\u98DF\u54C1\u304C\u3042\u308A\u307E\u305B\u3093") : browseResults.map((f) => /* @__PURE__ */ React.createElement(FoodResultRow, { key: f.n, f, onPick: pickFromBrowse }))
   )));
 }
-function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemoveSlot, onAddFood, onAddUnconfirmed, onRemoveItem, onEditNutrients }) {
+function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemoveSlot, onAddFood, onAddUnconfirmed, onAddManual, onRemoveItem, onEditNutrients }) {
   const totals = slot.totals;
   const unconfirmedCount = slot.items.filter((it) => !it.confirmed).length;
   return /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 12, padding: "1rem 1.1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 600, fontSize: 17, display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: colorForIndex(index) } }), slot.id), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(IconBtn, { label: "\u3053\u306E\u67A0\u3092\u30B3\u30D4\u30FC", onClick: onCopy }, "\u29C9"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u8CBC\u308A\u4ED8\u3051", onClick: onPaste }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement(IconBtn, { label: "\u3053\u306E\u67A0\u3092\u524A\u9664", danger: true, onClick: onRemoveSlot }, "\u2715"))), slot.items.length > 0 && /* @__PURE__ */ React.createElement("table", { style: { width: "100%", fontSize: 14.5, borderCollapse: "collapse", marginBottom: 8 } }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { style: { color: C.textMuted } }, /* @__PURE__ */ React.createElement("td", null, "\u98DF\u54C1\u540D"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "kcal"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "P"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u8102"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u70AD"), /* @__PURE__ */ React.createElement("td", { style: { textAlign: "right" } }, "\u5869"), /* @__PURE__ */ React.createElement("td", null))), /* @__PURE__ */ React.createElement("tbody", null, slot.items.map((it) => /* @__PURE__ */ React.createElement("tr", { key: it.id, id: `unconfirmed-item-${it.id}` }, /* @__PURE__ */ React.createElement("td", { style: { padding: "3px 0" } }, it.name, !it.confirmed && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
@@ -1013,7 +1049,7 @@ function SlotCard({ slot, index, foods, categoryOrder, onCopy, onPaste, onRemove
       style: { border: "none", background: "none", color: C.textMuted, cursor: "pointer", fontSize: 14 }
     },
     "\u2715"
-  )))))), /* @__PURE__ */ React.createElement(FoodAdder, { foods, categoryOrder, onAddFood, onAddUnconfirmed }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 8, fontSize: 14.5, color: C.textMuted } }, "\u5C0F\u8A08 ", totals.kcal, "kcal \u30FB P", Math.round(totals.p * 10) / 10, "g \u30FB \u8102", Math.round(totals.f * 10) / 10, "g \u30FB \u70AD", Math.round(totals.c * 10) / 10, "g \u30FB \u5869", Math.round(totals.salt * 10) / 10, "g", unconfirmedCount > 0 ? `(\u672A\u78BA\u5B9A${unconfirmedCount}\u4EF6\u3092\u9664\u304F)` : ""));
+  )))))), /* @__PURE__ */ React.createElement(FoodAdder, { foods, categoryOrder, onAddFood, onAddUnconfirmed, onAddManual }), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 8, fontSize: 14.5, color: C.textMuted } }, "\u5C0F\u8A08 ", totals.kcal, "kcal \u30FB P", Math.round(totals.p * 10) / 10, "g \u30FB \u8102", Math.round(totals.f * 10) / 10, "g \u30FB \u70AD", Math.round(totals.c * 10) / 10, "g \u30FB \u5869", Math.round(totals.salt * 10) / 10, "g", unconfirmedCount > 0 ? `(\u672A\u78BA\u5B9A${unconfirmedCount}\u4EF6\u3092\u9664\u304F)` : ""));
 }
 const emptyFoodForm = () => ({ n: "", mn: "", sub: [], k: "", p: "", f: "", c: "", s: "" });
 function normalizeNumInput(v) {
@@ -2495,6 +2531,7 @@ ${conflictKeys.join("\n")}`
     persistDay(dayPasteSlot(day, id, clip));
   };
   const addFood = (slotId, f) => persistDay(dayAddFood(day, slotId, f));
+  const addManual = (slotId, m) => persistDay(dayAddManual(day, slotId, m));
   const addUnconfirmed = (slotId, name) => {
     const trimmed = name.trim();
     const existingUnconfirmed = foods.find((f) => f.n === trimmed && f.mn === "\u672A\u78BA\u5B9A");
@@ -2646,7 +2683,7 @@ ${conflictKeys.join("\n")}`
         d.slots = (d.slots || []).map((s) => ({
           ...s,
           items: (s.items || []).map((it) => {
-            if (it.name === originalName) {
+            if (!it.manual && it.name === originalName) {
               changed = true;
               return { ...it, name: newFood.n, kcal: newFood.k, p: newFood.p, f: newFood.f, c: newFood.c, salt: newFood.s, confirmed: true };
             }
@@ -2838,6 +2875,7 @@ ${conflictKeys.join("\n")}`
       onRemoveSlot: () => removeSlot(s.id),
       onAddFood: (f) => addFood(s.id, f),
       onAddUnconfirmed: (n) => addUnconfirmed(s.id, n),
+      onAddManual: (m) => addManual(s.id, m),
       onRemoveItem: (itemId) => removeItem(s.id, itemId),
       onEditNutrients: (name) => editNutrientsFor(name)
     }
